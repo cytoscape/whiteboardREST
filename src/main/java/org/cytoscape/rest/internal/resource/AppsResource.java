@@ -39,11 +39,12 @@ public class AppsResource extends AbstractResource {
     
   private static final String RESOURCE_URN = "apps";
 
-	public AppsResource(final ResourceManager manager) {
-		super(manager);
-	}
-	
 	public AppsResource() {
+		super();
+	}
+
+	public void init(final ResourceManager manager) {
+		super.init(manager);
 	}
     
 	@Override

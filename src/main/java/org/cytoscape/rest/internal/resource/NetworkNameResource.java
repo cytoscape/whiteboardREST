@@ -64,6 +64,11 @@ public class NetworkNameResource extends AbstractResource {
 	
 	public NetworkNameResource() {
 		super();
+		// this.networkManager = getService(CyNetworkManager.class);
+	}
+
+	public void init(final ResourceManager manager) {
+		super.init(manager);
 		this.networkManager = getService(CyNetworkManager.class);
 	}
 

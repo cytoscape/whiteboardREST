@@ -19,7 +19,7 @@ import org.cytoscape.rest.internal.resource.NetworkNameResource;
 // import org.cytoscape.rest.internal.resource.NetworkViewResource;
 // import org.cytoscape.rest.internal.resource.PropertiesResource;
 // import org.cytoscape.rest.internal.resource.RootResource;
-// import org.cytoscape.rest.internal.resource.SessionResource;
+import org.cytoscape.rest.internal.resource.SessionResource;
 // import org.cytoscape.rest.internal.resource.StyleResource;
 // import org.cytoscape.rest.internal.resource.SwaggerUIResource;
 // import org.cytoscape.rest.internal.resource.TableResource;
@@ -38,7 +38,7 @@ public class CyRESTConstants {
 			// StyleResource.class,
 			// GroupResource.class,
 			// GlobalTableResource.class,
-			// SessionResource.class,
+			SessionResource.class,
 			NetworkNameResource.class,
 			// PropertiesResource.class,
 			// UIResource.class,

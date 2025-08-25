@@ -73,20 +73,21 @@ import io.swagger.annotations.ApiParam;
 @Path("/v1/apply")
 public class AlgorithmicResource extends AbstractResource {
 
-	private static TaskMonitor headlessTaskMonitor;
+	private TaskMonitor headlessTaskMonitor;
 
-	private static CyLayoutAlgorithmManager layoutManager;
+	private CyLayoutAlgorithmManager layoutManager;
 
-	private static NetworkViewTaskFactory fitContent;
+	private NetworkViewTaskFactory fitContent;
 
-	private static CyNetworkViewManager networkViewManager;
+	private CyNetworkViewManager networkViewManager;
 
-	private static EdgeBundler edgeBundler;
+	private EdgeBundler edgeBundler;
 	
-	private static ClearAllEdgeBends clearAllEdgeBends;
+	private ClearAllEdgeBends clearAllEdgeBends;
 
 	private static final String RESOURCE_URN = "apply";
 
+	/*
 	public AlgorithmicResource(final ResourceManager manager) {
 		super(manager);
 		AlgorithmicResource.headlessTaskMonitor = new HeadlessTaskMonitor();
@@ -100,11 +101,24 @@ public class AlgorithmicResource extends AbstractResource {
 
 		AlgorithmicResource.edgeBundler = new EdgeBundlerImpl(edgeBundlerTF);
 		AlgorithmicResource.clearAllEdgeBends = new ClearAllEdgeBendsImpl(clearEdgeBends);
-
-
 	}
+	*/
 
 	public AlgorithmicResource() {
+		super();
+	}
+
+	public void init(final ResourceManager manager) {
+		super.init(manager);
+		headlessTaskMonitor = new HeadlessTaskMonitor();
+		layoutManager = manager.getService(CyLayoutAlgorithmManager.class);
+		fitContent = manager.getService(NetworkViewTaskFactory.class, "(title=Fit Content)");
+		networkViewManager = manager.getService(CyNetworkViewManager.class);
+
+		final NetworkTaskFactory edgeBundlerTF = manager.getService(NetworkTaskFactory.class, "(title=All Nodes and Edges)");
+		final NetworkViewCollectionTaskFactory clearEdgeBends = manager.getService(NetworkViewCollectionTaskFactory.class, "(id=clearAllEdgeBendsFactory)");
+
+		edgeBundler = new EdgeBundlerImpl(edgeBundlerTF);
 	}
 
 	@Override

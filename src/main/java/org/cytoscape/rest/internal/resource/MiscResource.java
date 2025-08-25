@@ -49,12 +49,13 @@ public class MiscResource extends AbstractResource {
     return logger;
 	}
 
-	public MiscResource(final ResourceManager manager) {
-		super(manager);
-		this.props = getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+	public MiscResource() {
+		super();
 	}
 
-	public MiscResource() {
+	public void init(final ResourceManager manager) {
+		super.init(manager);
+		this.props = getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 	}
 
   @GET

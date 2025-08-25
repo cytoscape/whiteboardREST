@@ -1,5 +1,6 @@
 package org.cytoscape.rest.internal;
 
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Dictionary;
@@ -10,6 +11,7 @@ import java.util.Properties;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
@@ -35,6 +37,7 @@ import org.cytoscape.rest.internal.resource.AppsResource;
 import org.cytoscape.rest.internal.resource.CollectionResource;
 import org.cytoscape.rest.internal.resource.MiscResource;
 import org.cytoscape.rest.internal.resource.NetworkNameResource;
+import org.cytoscape.rest.internal.resource.SessionResource;
 import org.cytoscape.rest.internal.task.AllAppsStartedListener;
 import org.cytoscape.rest.internal.task.AutomationAppTracker;
 import org.cytoscape.rest.internal.task.ResourceManager;
@@ -58,6 +61,7 @@ public class CyActivator extends AbstractCyActivator implements AppsFinishedStar
 	private	AutomationAppTracker automationAppTracker = null;
 	private ServiceTracker cytoscapeJsWriterFactory = null;
 	private ServiceTracker cytoscapeJsReaderFactory = null;
+	private	ResourceManager resourceManager = null;
 
 
   public CyActivator() {
@@ -107,14 +111,17 @@ public class CyActivator extends AbstractCyActivator implements AppsFinishedStar
     edgeListReaderFactoryProps.setProperty("ID", "edgeListReaderFactory");
     registerService(bc, edgeListReaderFactory, InputStreamTaskFactory.class, edgeListReaderFactoryProps);
 
-		ResourceManager resourceManager = new ResourceManager(registrar, automationAppTracker, 
-				                                                  cytoscapeJsReaderFactory, cytoscapeJsWriterFactory, port);
+		resourceManager = new ResourceManager(registrar, automationAppTracker, 
+				                                  cytoscapeJsReaderFactory, cytoscapeJsWriterFactory, port);
 
+		/*
 		new AlgorithmicResource(resourceManager);
 		new AppsResource(resourceManager);
 		new CollectionResource(resourceManager);
 		new MiscResource(resourceManager);
 		new NetworkNameResource(resourceManager);
+		new SessionResource(resourceManager);
+		*/
 
 	}
 
@@ -177,13 +184,43 @@ public class CyActivator extends AbstractCyActivator implements AppsFinishedStar
 	@Override
   public void handleEvent(AppsFinishedStartingEvent event)  {
 		System.out.println("All apps loaded");
+
+		// Initiate all of our services.  We need to do this here bacause
+		// the whiteboard calls each constructor with no arguments, so this
+		// is how we pass arguments
+		//
+		for (Bundle bundle: automationAppTracker.getAppBundles()) {
+			for (Object obj: automationAppTracker.getServices(bundle)) {
+				// For each service that has an init method, call it
+				try {
+					Method method;
+					if ((method = getMethod(obj, "init", ResourceManager.class)) != null) {
+						method.invoke(obj,resourceManager);
+					} else if ((method = getMethod(obj, "init", CyServiceRegistrar.class)) != null) {
+						method.invoke(obj,registrar);
+					}
+				} catch (Exception iae) {
+					logger.error("Unable to initialize: "+obj);
+				}
+			}
+		}
+
     try {
-      initiateCall();
+      // initiateCall();
     }
     catch (Exception e) {
       e.printStackTrace();
       logger.error("Unable to start CyREST", e);
     }
   }
+
+	private Method getMethod(Object obj, String methodName, Class<?>... parameterTypes) {
+		try {
+			Method method = obj.getClass().getMethod(methodName, parameterTypes);
+			return method;
+		} catch (NoSuchMethodException e) {
+			return null;
+		}
+	}
 
 }

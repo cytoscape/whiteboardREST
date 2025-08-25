@@ -14,6 +14,7 @@ import org.cytoscape.ci.CIExceptionFactory;
 import org.cytoscape.ci.CIResponseFactory;
 import org.cytoscape.ci.model.CIError;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyIdentifiable;
@@ -22,6 +23,11 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.session.CySessionManager;
+import org.cytoscape.task.create.NewSessionTaskFactory;
+import org.cytoscape.task.read.OpenSessionTaskFactory;
+import org.cytoscape.task.write.SaveSessionAsTaskFactory;
+import org.cytoscape.task.write.SaveSessionTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
@@ -58,19 +64,25 @@ public abstract class AbstractResource {
   protected static final String COLUMN_DESCRIPTION = "The name of the column that will be queried for matches.";
   protected static final String QUERY_STRING_DESCRIPTION = "The value to be matched.";
 
-	public static ResourceManager manager;
-	public static CIErrorFactory ciErrorFactory;
-	public static CIExceptionFactory ciExceptionFactory;
-	public static CIResponseFactory ciResponseFactory;
-	public static CyNetworkManager networkManager;
-	public static CyNetworkViewManager networkViewManager;
-	public static CyNetworkViewWriterFactory cytoscapeJsWriterFactory;
-	public static VisualMappingManager vmm;
+	public ResourceManager manager;
+	public CIErrorFactory ciErrorFactory;
+	public CIExceptionFactory ciExceptionFactory;
+	public CIResponseFactory ciResponseFactory;
+	public CyNetworkManager networkManager;
+	public CyNetworkViewManager networkViewManager;
+	public CyNetworkViewWriterFactory cytoscapeJsWriterFactory;
+	public VisualMappingManager vmm;
+	public CyEventHelper cyEventHelper;
 
-	protected final GraphObjectSerializer serializer;
+	protected GraphObjectSerializer serializer;
+
 
 	public AbstractResource(final ResourceManager manager) {
-		AbstractResource.manager = manager;
+	}
+	/*
+	public AbstractResource(final ResourceManager manager) {
+		System.out.println("AbstractResource");
+		// AbstractResource.manager = manager;
 		AbstractResource.ciErrorFactory = new CIErrorFactoryImpl(null);
     AbstractResource.ciExceptionFactory = new CIExceptionFactoryImpl();
     AbstractResource.ciResponseFactory = new CIResponseFactoryImpl();
@@ -78,10 +90,26 @@ public abstract class AbstractResource {
 		AbstractResource.networkManager = getService(CyNetworkManager.class);
 		AbstractResource.networkViewManager = getService(CyNetworkViewManager.class);
 		AbstractResource.vmm = manager.getService(VisualMappingManager.class);
+		AbstractResource.cyEventHelper = getService(CyEventHelper.class);
+		System.out.println("AbstractResource -- done");
 	}
+	*/
 
 	public AbstractResource() {
+		System.out.println("AbstractResource()");
+	}
+
+	public void init(ResourceManager manager) {
+		System.out.println("AbstractResource init");
+		this.manager = manager;
+		this.ciErrorFactory = new CIErrorFactoryImpl(null);
+    this.ciExceptionFactory = new CIExceptionFactoryImpl();
+    this.ciResponseFactory = new CIResponseFactoryImpl();
 		this.serializer = new GraphObjectSerializer();
+		this.networkViewManager = getService(CyNetworkViewManager.class);
+		this.networkManager = getService(CyNetworkManager.class);
+		this.vmm = manager.getService(VisualMappingManager.class);
+		this.cyEventHelper = getService(CyEventHelper.class);
 	}
 
 	public <T> T getService(Class<? extends T> clazz) {

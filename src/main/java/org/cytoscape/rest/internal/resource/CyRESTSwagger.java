@@ -83,7 +83,15 @@ public class CyRESTSwagger extends AbstractResource
 	}
 
 	public CyRESTSwagger(){
-		updateSwagger();
+		super();
+	}
+
+	public void init(ResourceManager manager) {
+		super.init(manager);
+		appTracker = ResourceManager.appTracker; // XXX Replace with a method
+		// updateSwagger();
+		// buildSwagger();
+
 	}
 
 	protected void updateSwagger()
@@ -221,6 +229,7 @@ public class CyRESTSwagger extends AbstractResource
 
 	@Produces(MediaType.APPLICATION_JSON)
 	@GET
+	@Path("/")
 	public String get()
 	{
 		if (swaggerDefinition == null)

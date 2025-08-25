@@ -41,8 +41,11 @@ public class AutomationAppTracker extends ServiceTracker implements BundleListen
 	}
 
 	public Set<Bundle> getAppBundles() {
-		
 		return Collections.unmodifiableSet(bundles.keySet());
+	}
+
+	public Set<Object> getServices(Bundle bundle) {
+		return Collections.unmodifiableSet(bundles.get(bundle));
 	}
 	
 	private void delegateAddService( ServiceReference reference, Object service ) {
@@ -88,6 +91,7 @@ public class AutomationAppTracker extends ServiceTracker implements BundleListen
 	}
 
 	private void addAutomationService(Bundle bundle, Object service) {
+		System.out.println("addAutomationService: "+service);
 		Set<Object> services = bundles.get(bundle);
 		if (services == null) {
 			services = new HashSet<Object>();
@@ -100,6 +104,7 @@ public class AutomationAppTracker extends ServiceTracker implements BundleListen
 		
 		String command = serviceReference.getProperty(ServiceProperties.COMMAND).toString();
 		String commandNamespace = serviceReference.getProperty(ServiceProperties.COMMAND_NAMESPACE).toString();
+		System.out.println("addCommand: "+commandNamespace+" "+command);
 		Map<String, Bundle> commandMap = commandBundles.get(commandNamespace);
 		if (commandMap == null) {
 			commandMap = new HashMap<String, Bundle>();

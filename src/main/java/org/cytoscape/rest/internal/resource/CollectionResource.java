@@ -57,8 +57,8 @@ import io.swagger.annotations.ApiParam;
 @Path("/v1/collections")
 public class CollectionResource extends AbstractResource {
 
-	private final ObjectMapper mapper;
-	private final TableMapper tableMapper;
+	private ObjectMapper mapper = null;
+	private TableMapper tableMapper = null;
 
 	private static final String RESOURCE_URN = "collections";
 
@@ -107,6 +107,11 @@ public class CollectionResource extends AbstractResource {
 
 	public CollectionResource() {
 		super();
+	}
+
+	public void init(ResourceManager manager) {
+		System.out.println("CollectionResource init");
+		super.manager = manager;
 		mapper = new ObjectMapper();
 		this.tableMapper = new TableMapper();
 		this.mapper.registerModule(new TableModule());
