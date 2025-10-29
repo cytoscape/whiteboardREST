@@ -1,28 +1,27 @@
 package org.cytoscape.rest.internal.model;
 
 import java.util.List;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel
+@Schema
 public class VisualStyleMappingModel {
 	
-	@ApiModelProperty(value="The type of Mapping", required = true, allowableValues="discreet,continuous,passthrough")
+	@Schema(description="The type of Mapping", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues={"discreet","continuous","passthrough"})
 	public String mappingType;
 	
-	@ApiModelProperty(value="Table column this Mapping gets values from", required = true)
+	@Schema(description="Table column this Mapping gets values from", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String mappingColumn;
 	
-	@ApiModelProperty(value="The type of the `mappingColumn`, represented as the simple name of its Java class.", required = true)
+	@Schema(description="The type of the `mappingColumn`, represented as the simple name of its Java class.", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String mappingColumnType;
 	
-	@ApiModelProperty(value="Unique internal name of the Visual Property this mapping is applied to.", required = true)
+	@Schema(description="Unique internal name of the Visual Property this mapping is applied to.", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String visualProperty;
 	
-	@ApiModelProperty(required = false, value="Map for `discreet` Mappings.", example="")
+	@Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED, description="Map for `discreet` Mappings.", example="")
 	public List<DiscreteMappingKeyValueModel> map;
 	
-	@ApiModelProperty(required = false, value="Points for `continuous` Mappings.", example="")
+	@Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED, description="Points for `continuous` Mappings.", example="")
 	public List<PointModel> points;
 	
 }

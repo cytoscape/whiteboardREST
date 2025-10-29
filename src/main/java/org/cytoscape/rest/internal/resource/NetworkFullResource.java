@@ -15,9 +15,9 @@ import org.cytoscape.rest.internal.CyRESTConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 
 import org.osgi.service.component.annotations.Component;
@@ -26,7 +26,7 @@ import static org.cytoscape.rest.internal.resource.NetworkErrorConstants.*;
 import org.cytoscape.rest.internal.task.ResourceManager;
 
 @Component(service = NetworkFullResource.class, property = { "osgi.jaxrs.resource=true" })
-@Api(tags = {CyRESTSwagger.CyRESTSwaggerConfig.NETWORKS_TAG})
+@Tag(name = CyRESTSwagger.CyRESTSwaggerConfig.NETWORKS_TAG)
 @Path("/v1/networks.json")
 public class NetworkFullResource extends AbstractResource {
 
@@ -54,13 +54,13 @@ public class NetworkFullResource extends AbstractResource {
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON + "; charset=UTF-8")
-	@ApiOperation(
-			value=" Get networks in Cytoscape.js JSON format",
-			notes="Returns a list of all networks as an array of "
+	@Operation(
+			summary=" Get networks in Cytoscape.js JSON format",
+			description="Returns a list of all networks as an array of "
 					+ "[Cytoscape.js]("+CyRESTConstants.CYTOSCAPE_JS_FILE_FORMAT_LINK+") format entries.\n\n" + NETWORK_QUERY_DESCRIPTION)
 	public String getNetworks(
-			@ApiParam(value=COLUMN_DESCRIPTION, required=false) @QueryParam("column") String column, 
-			@ApiParam(value=QUERY_STRING_DESCRIPTION, required=false) @QueryParam("query") String query) {
+			@Parameter(description=COLUMN_DESCRIPTION, required=false) @QueryParam("column") String column, 
+			@Parameter(description=QUERY_STRING_DESCRIPTION, required=false) @QueryParam("query") String query) {
 		Set<CyNetwork> networks;
 		
 		if (column == null && query == null) {

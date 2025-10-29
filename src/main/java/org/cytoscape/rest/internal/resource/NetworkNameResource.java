@@ -32,12 +32,19 @@ import org.cytoscape.rest.internal.task.ResourceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import static org.cytoscape.rest.internal.resource.NetworkErrorConstants.*;
 
+@Tag(name="networks")
 @Component(service = NetworkNameResource.class, property = { "osgi.jaxrs.resource=true" })
 @Path("/v1")
 public class NetworkNameResource extends AbstractResource {
@@ -74,13 +81,19 @@ public class NetworkNameResource extends AbstractResource {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON + "; charset=UTF-8")
-	@ApiOperation(value = "Returns a list of network names with corresponding SUIDs",
-		notes="Returns a list of all networks as names and their corresponding SUIDs.\n\n" + NETWORK_QUERY_DESCRIPTION,
-		    response = SUIDNameModel.class, responseContainer="List")
+	@Operation(summary = "Returns a list of network names with corresponding SUIDs",
+		description="Returns a list of all networks as names and their corresponding SUIDs.\n\n" + NETWORK_QUERY_DESCRIPTION)
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Success", 
+		             content = { 
+										@Content( array = @ArraySchema(
+										    schema = @Schema(implementation = SUIDNameModel.class)))
+								 }),
+	})
   @Path("/network.names")
 	public List<Map<String,Object>> getNetworksNames(
-			@ApiParam(value=COLUMN_DESCRIPTION) @QueryParam("column") String column,
-			@ApiParam(value=QUERY_STRING_DESCRIPTION) @QueryParam("query") String query) {
+			@Parameter(description=COLUMN_DESCRIPTION) @QueryParam("column") String column,
+			@Parameter(description=QUERY_STRING_DESCRIPTION) @QueryParam("query") String query) {
 		Set<CyNetwork> networks;
 
 		if (column == null && query == null) {

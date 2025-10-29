@@ -1,12 +1,11 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel
+@Schema
 public class CyPropertyValueModel {
 	
-	@ApiModelProperty(value="Value of the CyProperty")
-	public String value;
+	@Schema(description="Value of the CyProperty")
+	public String description;
 	
 }

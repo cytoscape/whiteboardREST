@@ -1,11 +1,10 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel(value="Title Model", description="The new name", subTypes= {CyTableWithRowsModel.class})
+@Schema(name="Title Model", description="The new name", subTypes= {CyTableWithRowsModel.class})
 public class TitleModel {
 	
-	@ApiModelProperty(value = "Title", required=true)
+	@Schema(description = "Title", requiredMode=Schema.RequiredMode.REQUIRED)
 	public String title;
 }

@@ -1,9 +1,8 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel(value="Row data associated with the Edge" + ModelConstants.ROW_DESCRIPTION)
+@Schema(description="Row data associated with the Edge" + ModelConstants.ROW_DESCRIPTION)
 public class EdgeDataModel {
 
 	private String source;
@@ -12,7 +11,7 @@ public class EdgeDataModel {
 	/**
 	 * @return the source
 	 */
-	@ApiModelProperty(value="SUID of the Edge's Source Node", required=true)
+	@Schema(description="SUID of the Edge's Source Node", requiredMode=Schema.RequiredMode.REQUIRED)
 	public String getSource() {
 		return source;
 	}
@@ -28,7 +27,7 @@ public class EdgeDataModel {
 	/**
 	 * @return the target
 	 */
-	@ApiModelProperty(value="SUID of the Edge's Target Node", required=true)
+	@Schema(description="SUID of the Edge's Target Node", requiredMode=Schema.RequiredMode.REQUIRED)
 	public String getTarget() {
 		return target;
 	}

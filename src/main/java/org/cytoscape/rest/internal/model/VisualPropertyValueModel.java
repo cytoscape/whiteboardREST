@@ -1,12 +1,11 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel(value="Visual Property Value")
+@Schema(name="Visual Property Value")
 public class VisualPropertyValueModel {
-	@ApiModelProperty(value="Unique internal name of the Visual Property.", example="VISUAL_PROPERTY_NAME")
+	@Schema(description="Unique internal name of the Visual Property.", example="VISUAL_PROPERTY_NAME")
 	public String visualProperty;
-	@ApiModelProperty(value="Serialized value of the Visual Property, or null.")
+	@Schema(description="Serialized value of the Visual Property, or null.")
 	public Object value;
 }

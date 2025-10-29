@@ -2,10 +2,9 @@ package org.cytoscape.rest.internal.model;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel(value="Cytoscape and CyREST API Versions")
+@Schema(description="Cytoscape and CyREST API Versions")
 @XmlRootElement
 public class CytoscapeVersionModel {
 	private String apiVersion;
@@ -32,7 +31,7 @@ public class CytoscapeVersionModel {
 	/**
 	 * @return the apiVersion
 	 */
-	@ApiModelProperty(value="CyREST API Version")
+	@Schema(description="CyREST API Version")
 	public String getApiVersion() {
 		return apiVersion;
 	}
@@ -40,7 +39,7 @@ public class CytoscapeVersionModel {
 	/**
 	 * @return the cytoscapeVersion
 	 */
-	@ApiModelProperty(value="Cytoscape Version")
+	@Schema(description="Cytoscape Version")
 	public String getCytoscapeVersion() {
 		return cytoscapeVersion;
 	}

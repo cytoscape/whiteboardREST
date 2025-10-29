@@ -1,12 +1,11 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel
+@Schema
 public class NetworkSUIDModel 
 {
-	@ApiModelProperty(value="SUID of the Network")
+	@Schema(description="SUID of the Network")
 	public Long networkSUID;
 	
 	public NetworkSUIDModel(Long networkSUID) {

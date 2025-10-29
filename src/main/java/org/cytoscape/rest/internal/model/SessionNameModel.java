@@ -1,12 +1,11 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel(value="Session File name")
+@Schema(description="Session File name")
 public class SessionNameModel 
 {
-	@ApiModelProperty(value="Full file name for the Session")
+	@Schema(description="Full file name for the Session")
 	public String name;
 	
 	public SessionNameModel(String name)

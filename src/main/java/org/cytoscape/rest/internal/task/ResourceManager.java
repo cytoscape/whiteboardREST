@@ -64,5 +64,8 @@ public class ResourceManager {
     return (InputStreamTaskFactory) cytoscapeJsReaderFactory.getService();
 	}
 
+	public AutomationAppTracker getAutomationAppTracker() {
+		return appTracker;
+	}
 
 }

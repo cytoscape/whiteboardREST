@@ -2,23 +2,22 @@ package org.cytoscape.rest.internal.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel
+@Schema
 public class VisualPropertyModel {
 	
-	@ApiModelProperty(value="Unique internal name of the Visual Property", example="NODE_SHAPE")
+	@Schema(description="Unique internal name of the Visual Property", example="NODE_SHAPE")
 	public String visualProperty;
 	
-	@ApiModelProperty(value="Human-readable name of the Visual Property. This can be seen primarily in the Cytoscape GUI", example="Node Shape")
+	@Schema(description="Human-readable name of the Visual Property. This can be seen primarily in the Cytoscape GUI", example="Node Shape")
 	public String name;
 	
-	@ApiModelProperty(value="The data type of the Objects to which this Visual Property applies, represented as the simple name of its Java class.", example="CyNode")
+	@Schema(description="The data type of the Objects to which this Visual Property applies, represented as the simple name of its Java class.", example="CyNode")
 	public String targetDataType;
 	
 	@JsonProperty("default")
-	@ApiModelProperty(value="Default value of this Visual Property", example="ELLIPSE")
+	@Schema(description="Default value of this Visual Property", example="ELLIPSE")
 	public String _default;
 	
 	public VisualPropertyModel()	{

@@ -1,8 +1,8 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel(value="Row Data", description="Table data associated with this row. " + ModelConstants.ROW_DESCRIPTION)
+@Schema(name="Row Data", description="Table data associated with this row. " + ModelConstants.ROW_DESCRIPTION)
 public class CyRowModel{
 
 }

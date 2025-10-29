@@ -31,12 +31,16 @@ import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Component(service = SessionResource.class, property = { "osgi.jaxrs.resource=true" })
-@Api(tags = {CyRESTSwagger.CyRESTSwaggerConfig.SESSION_TAG})
+@Tag(name = CyRESTSwagger.CyRESTSwaggerConfig.SESSION_TAG)
 @Path("/v1/session")
 public class SessionResource extends AbstractResource {
 
@@ -85,9 +89,12 @@ public class SessionResource extends AbstractResource {
 	@GET
 	@Path("/name")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Get current session file name",
-    notes = "Returns the file name for the current Cytoscape session.",
-    response = SessionNameModel.class)
+	@Operation(summary ="Get current session file name",
+    description ="Returns the file name for the current Cytoscape session.",
+    responses = {
+			@ApiResponse(responseCode = "200", description = "Session name", 
+			             content = { @Content(schema = @Schema(implementation=SessionNameModel.class))})
+	})
 	public SessionNameModel getSessionName() 
 	{
 		String sessionName = sessionManager.getCurrentSessionFileName();
@@ -101,9 +108,12 @@ public class SessionResource extends AbstractResource {
 	
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Delete current Session",
-    notes = "This deletes the current session and initializes a new one. A message is returned to indicate the success of the deletion.",
-    response = MessageModel.class)
+	@Operation(summary ="Delete current Session",
+    description ="This deletes the current session and initializes a new one. A message is returned to indicate the success of the deletion.",
+    responses = {
+			@ApiResponse(responseCode = "200", description="A message",
+			             content = { @Content(schema = @Schema(implementation=MessageModel.class))})
+	})
 	public MessageModel deleteSession() {
 
 		try {
@@ -126,10 +136,13 @@ public class SessionResource extends AbstractResource {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Load a Session from a local file",
-    notes = "Loads a session from a local file and returns the session file name",
-    response = FileModel.class)
-	public FileModel getSessionFromFile(@ApiParam(value = "Session file location as an absolute path", required = true) @QueryParam("file") String file) throws IOException
+	@Operation(summary ="Load a Session from a local file",
+    description ="Loads a session from a local file and returns the session file name",
+    responses = {
+			@ApiResponse(responseCode = "200", description="The loaded file",
+			             content = { @Content(schema = @Schema(implementation=FileModel.class))})
+	})
+	public FileModel getSessionFromFile(@Parameter(description ="Session file location as an absolute path", required = true) @QueryParam("file") String file) throws IOException
 	{
 		System.out.println("File: "+file);
 		File sessionFile = null;
@@ -156,10 +169,13 @@ public class SessionResource extends AbstractResource {
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Save current Session to a file",
-    notes = "Saves the current session to a file. If successful, the session file location will be returned.",
-    response = FileModel.class)
-	public FileModel createSessionFile(@ApiParam(value = "Session file location as an absolute path", required = true) @QueryParam("file") String file) {
+	@Operation(summary ="Save current Session to a file",
+    description ="Saves the current session to a file. If successful, the session file location will be returned.",
+	responses = {
+			@ApiResponse(responseCode = "200", description = "Saved file", 
+			             content = { @Content(schema = @Schema(implementation=FileModel.class))})
+	})
+	public FileModel createSessionFile(@Parameter(description ="Session file location as an absolute path", required = true) @QueryParam("file") String file) {
 		File sessionFile = null;
 		try {
 			sessionFile = new File(file);

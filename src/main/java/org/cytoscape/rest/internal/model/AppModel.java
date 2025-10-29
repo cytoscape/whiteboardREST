@@ -2,10 +2,10 @@ package org.cytoscape.rest.internal.model;
 
 import org.osgi.framework.Bundle;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel()
+
+@Schema()
 public class AppModel {
 
 	public static final String OSGI_BUNDLE_STATUS_ALLOWABLE_VALUES = Bundle.UNINSTALLED + "," +
@@ -31,13 +31,13 @@ public class AppModel {
 
 
 
-	@ApiModelProperty(value="If this App is implemented as an [OSGi bundle](https://osgi.org/javadoc/r4v43/core/org/osgi/framework/Bundle.html), this field contains its `Bundle-Name` header", required=false)
+	@Schema(requiredMode=Schema.RequiredMode.NOT_REQUIRED,description="If this App is implemented as an [OSGi bundle](https://osgi.org/javadoc/r4v43/core/org/osgi/framework/Bundle.html), this field contains its `Bundle-Name` header")
 	public String bundleName;
-	@ApiModelProperty(value="If this App is implemented as an [OSGi bundle](https://osgi.org/javadoc/r4v43/core/org/osgi/framework/Bundle.html), this field contains its `Bundle-SymbolicName` header", required=false)
+	@Schema(requiredMode=Schema.RequiredMode.NOT_REQUIRED,description="If this App is implemented as an [OSGi bundle](https://osgi.org/javadoc/r4v43/core/org/osgi/framework/Bundle.html), this field contains its `Bundle-SymbolicName` header")
 	public String bundleSymbolicName;
-	@ApiModelProperty(value="If this App is implemented as an [OSGi bundle](https://osgi.org/javadoc/r4v43/core/org/osgi/framework/Bundle.html), this field contains its `Bundle-Version` header", required=false)
+	@Schema(requiredMode=Schema.RequiredMode.NOT_REQUIRED,description="If this App is implemented as an [OSGi bundle](https://osgi.org/javadoc/r4v43/core/org/osgi/framework/Bundle.html), this field contains its `Bundle-Version` header")
 	public String bundleVersion;
-	@ApiModelProperty(value="If this App is implemented as an [OSGi bundle](https://osgi.org/javadoc/r4v43/core/org/osgi/framework/Bundle.html), this field contains its state. " + OSGI_BUNDLE_STATUS_DESCRIPTION_LIST, required=false, allowableValues="1,2,4,8,16,32")
+	@Schema(requiredMode=Schema.RequiredMode.NOT_REQUIRED,description="If this App is implemented as an [OSGi bundle](https://osgi.org/javadoc/r4v43/core/org/osgi/framework/Bundle.html), this field contains its state. " + OSGI_BUNDLE_STATUS_DESCRIPTION_LIST, allowableValues="1,2,4,8,16,32")
 	public int bundleState;
 
 

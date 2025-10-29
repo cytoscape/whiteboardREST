@@ -2,24 +2,23 @@ package org.cytoscape.rest.internal.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel(value="Cytoscape Table", description="A Cytoscape table definition", subTypes= {CyTableWithRowsModel.class})
+@Schema(name="Cytoscape Table", description="A Cytoscape table definition", subTypes= {CyTableWithRowsModel.class})
 public class CyTableModel {
-	@ApiModelProperty(value = "SUID of the Table", required=true)
+	@Schema(description = "SUID of the Table", requiredMode=Schema.RequiredMode.REQUIRED)
 	public Long SUID;
 	
-	@ApiModelProperty(value = "Title", required=true)
+	@Schema(description = "Title", requiredMode=Schema.RequiredMode.REQUIRED)
 	public String title;
 	
-	@ApiModelProperty(value = "Public. This is true if this table is visible by default in the Cytoscape GUI", required=true)
+	@Schema(description = "Public. This is true if this table is visible by default in the Cytoscape GUI", requiredMode=Schema.RequiredMode.REQUIRED)
 	@JsonProperty("public")
 	public boolean _public;
 	
-	@ApiModelProperty(value = "Mutable", required=true)
+	@Schema(description = "Mutable", requiredMode=Schema.RequiredMode.REQUIRED)
 	public String mutable;
 	
-	@ApiModelProperty(value = "Primary Key", required=true)
+	@Schema(description = "Primary Key", requiredMode=Schema.RequiredMode.REQUIRED)
 	public String primaryKey;
 }

@@ -2,11 +2,10 @@ package org.cytoscape.rest.internal.model;
 
 import java.util.List;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel(value="Cytoscape Table with Rows", description="A definition of a column from a Cytoscape table, and a list of its rows.", parent=CyTableModel.class)
+@Schema(name="Cytoscape Table with Rows", description="A definition of a column from a Cytoscape table, and a list of its rows.", allOf={CyTableModel.class})
 public class CyTableWithRowsModel extends CyTableModel{
-	@ApiModelProperty(value = "Rows in this Table", required=true)
+	@Schema(description = "Rows in this Table", requiredMode=Schema.RequiredMode.REQUIRED)
 	public List<CyRowModel> rows;
 }

@@ -1,16 +1,15 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel(value="Node Data")
+@Schema(description="Node Data")
 public class NodeModel {
 	private NodeDataModel data;
 
 	/**
 	 * @return the data
 	 */
-	@ApiModelProperty(value="Associated Data from the Node Table. " + ModelConstants.ROW_DESCRIPTION)
+	@Schema(description="Associated Data from the Node Table. " + ModelConstants.ROW_DESCRIPTION)
 	public NodeDataModel getData() {
 		return data;
 	}

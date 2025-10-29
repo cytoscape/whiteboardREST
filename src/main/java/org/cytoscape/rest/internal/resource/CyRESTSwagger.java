@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -26,24 +27,35 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import io.swagger.annotations.ExternalDocs;
-import io.swagger.annotations.Info;
-import io.swagger.annotations.SwaggerDefinition;
-import io.swagger.annotations.Tag;
-import io.swagger.jaxrs.Reader;
-import io.swagger.jaxrs.config.BeanConfig;
-import io.swagger.jaxrs.config.ReaderListener;
-import io.swagger.models.HttpMethod;
-import io.swagger.models.Operation;
+import io.swagger.v3.core.util.Json;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.integration.api.OpenApiReader;
+import io.swagger.v3.jaxrs2.integration.JaxrsAnnotationScanner;
+import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
+import io.swagger.v3.jaxrs2.ReaderListener;
+// import io.swagger.v3.oas.models.HttpMethod; -- use method attribute in @Operation
 
-import io.swagger.models.Response;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
+import io.swagger.v3.oas.models.Paths;
 
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.servers.Server;
+import io.swagger.v3.oas.models.tags.Tag;
+/*
 import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.RefProperty;
 import io.swagger.util.Json;
+*/
 
 @Component(service = CyRESTSwagger.class, property = { "osgi.jaxrs.resource=true" })
 @Path("/v1/swagger.json")
@@ -86,9 +98,10 @@ public class CyRESTSwagger extends AbstractResource
 		super();
 	}
 
+	@Override
 	public void init(ResourceManager manager) {
 		super.init(manager);
-		appTracker = ResourceManager.appTracker; // XXX Replace with a method
+		appTracker = manager.getAutomationAppTracker();
 		// updateSwagger();
 		// buildSwagger();
 
@@ -107,6 +120,7 @@ public class CyRESTSwagger extends AbstractResource
 	protected void buildSwagger()
 	{
 		final Set<Class<?>> classes = new HashSet<Class<?>>(this.classes);
+		/*
 		BeanConfig beanConfig = new BeanConfig(){
 			public Set<Class<?>> classes()
 			{
@@ -123,58 +137,92 @@ public class CyRESTSwagger extends AbstractResource
 		beanConfig.setPrettyPrint(true);
 
 		Swagger swagger = beanConfig.getSwagger();
+		*/
 
 		String automationAppReport = appTracker.getMarkdownReport(); 
-		swagger.getInfo().setDescription(SWAGGER_INFO_DESCRIPTION + automationAppReport);
+
+		OpenAPI openAPI = new OpenAPI()
+				.info(new Info()
+						.title("CyREST API")
+						.description(SWAGGER_INFO_DESCRIPTION + automationAppReport))
+				.servers(Collections.singletonList(new Server().url(ResourceManager.HOST + ":" + ResourceManager.cyRESTPort)))
+				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.COLLECTIONS_TAG))
+				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.COMMANDS_TAG))
+				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.CYTOSCAPE_SYSTEM_TAG))
+				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.GROUPS_TAG))
+				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.LAYOUTS_TAG))
+				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.NETWORKS_TAG))
+				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.NETWORK_VIEWS_TAG))
+				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.PROPERTIES_TAG))
+				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.REST_SERVICE_TAG))
+				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.SESSION_TAG))
+				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.TABLES_TAG))
+				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.USER_INTERFACE_TAG))
+				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.VISUAL_PROPERTIES_TAG))
+				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.VISUAL_STYLES_TAG));
 		
-		wrapCIResponses(swagger);
-		addCommandLinks(swagger);
+		wrapCIResponses(openAPI);
+		addCommandLinks(openAPI);
 
 		// serialization of the Swagger definition
 		try 
 		{
 			Json.mapper().enable(SerializationFeature.INDENT_OUTPUT);
-			this.swaggerDefinition = Json.mapper().writeValueAsString(swagger);
+			this.swaggerDefinition = Json.mapper().writeValueAsString(openAPI);
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}
 
-	private void wrapCIResponses(Swagger swagger) {
-		Map<String, io.swagger.models.Path> paths = swagger.getPaths();
+	private void wrapCIResponses(OpenAPI openAPI) {
+		Paths paths = openAPI.getPaths();
 		if (paths != null)
-			for (Map.Entry<String, io.swagger.models.Path> pathEntry : paths.entrySet()) {
+			for (Map.Entry<String, PathItem> pathEntry : paths.entrySet()) {
 				try {
-				Map<HttpMethod, Operation> operationMap = pathEntry.getValue().getOperationMap();
-				for (Map.Entry<HttpMethod, Operation> operationEntry : operationMap.entrySet()) {
+					Operation operation = pathEntry.getValue().getGet();
+					if (operation != null)
+						wrapOperation(pathEntry, operation);
 
-					Object ciExtension = operationEntry.getValue().getVendorExtensions().get(CISwaggerConstants.X_CI_EXTENSION);
+					operation = pathEntry.getValue().getPost();
+					if (operation != null)
+						wrapOperation(pathEntry, operation);
 
-					if (ciExtension != null && ciExtension instanceof Map) {
-						Map<?,?> map = (Map<?, ?>) ciExtension;
-						if (CISwaggerConstants.TRUE.equals(map.get(CISwaggerConstants.CI_EXTENSION_CI_WRAPPING))) {
-						
-							for (Map.Entry<String, Response> responseEntry : operationEntry.getValue().getResponses().entrySet()) {
-								
-								//System.out.println("Wrapping " + responseEntry.getKey() + " response for path " + pathEntry.getKey() + " data model:" + responseEntry.getValue().getDescription());
+					operation = pathEntry.getValue().getPut();
+					if (operation != null)
+						wrapOperation(pathEntry, operation);
 
-								Map<String, Property> propertyMap = new HashMap<String, Property>();
-								propertyMap.put("data", responseEntry.getValue().getSchema());
-
-								RefProperty errorProperty = new RefProperty("#/definitions/CIError");
-
-								propertyMap.put("errors", new ArrayProperty(errorProperty));
-								ObjectProperty ciProperty = new ObjectProperty(propertyMap);
-
-								responseEntry.getValue().setSchema(ciProperty);
-							}
-						}
-					}
-				}
+					operation = pathEntry.getValue().getDelete();
+					if (operation != null)
+						wrapOperation(pathEntry, operation);
 				} catch (Exception e)
 				{
 					e.printStackTrace();
+				}
+			}
+	}
+
+	private void wrapOperation(Map.Entry<String, PathItem> pathEntry, Operation operation) {
+
+		Object ciExtension = operation.getExtensions().get(CISwaggerConstants.X_CI_EXTENSION);
+
+		if (ciExtension != null && ciExtension instanceof Map) {
+				Map<?,?> map = (Map<?, ?>) ciExtension;
+				if (CISwaggerConstants.TRUE.equals(map.get(CISwaggerConstants.CI_EXTENSION_CI_WRAPPING))) {
+
+					for (Map.Entry<String, ApiResponse> responseEntry : operation.getResponses().entrySet()) {
+
+						System.out.println("Wrapping " + responseEntry.getKey() + " response for path " + pathEntry.getKey() + " data model:" + responseEntry.getValue().getDescription());
+
+						Content content = responseEntry.getValue().getContent();
+						if (content != null) {
+							for (String mediaTypeName:content.keySet()) {
+								Schema schemaToWrap = content.get(mediaTypeName).getSchema();
+								Schema wrappedSchema = new Schema<>().addProperty("data",schemaToWrap).addProperty("errors", new ArraySchema().$ref("#/definitions/CIError"));
+								content.get(mediaTypeName).setSchema(wrappedSchema);
+							}
+						}
+					}
 				}
 			}
 	}
@@ -198,33 +246,50 @@ public class CyRESTSwagger extends AbstractResource
 		}
 	}
 	
-	private void addCommandLinks(Swagger swagger) {
-		Map<String, io.swagger.models.Path> paths = swagger.getPaths();
+	private void addCommandLinks(OpenAPI openAPI) {
+		Paths paths = openAPI.getPaths();
 		
 		if (paths != null) {
-			for (Map.Entry<String, io.swagger.models.Path> pathEntry : paths.entrySet()) {
-				
-				Map<HttpMethod, Operation> operationMap = pathEntry.getValue().getOperationMap();
-				for (Map.Entry<HttpMethod, Operation> operationEntry : operationMap.entrySet()) {
+			for (Map.Entry<String, PathItem> pathEntry : paths.entrySet()) {
+				try {
+					Operation operation = pathEntry.getValue().getGet();
+					if (operation != null)
+						wrapCommand(pathEntry, operation);
 
-					if (operationEntry.getValue().getTags() != null && operationEntry.getValue().getTags().contains(CyRESTSwagger.CyRESTSwaggerConfig.COMMANDS_TAG))
-					{
-						String description = operationEntry.getValue().getDescription();
-						if (description == null) {
-							description = "";
-						}
-						description += getCommandLink();
-						operationEntry.getValue().setDescription(description);
-					}
+					operation = pathEntry.getValue().getPost();
+					if (operation != null)
+						wrapCommand(pathEntry, operation);
 
-					//Should be want to scan descriptions, parameter details, etc. and automatically generate links,
-					//this is how it could happen. Note that 
-					//operationEntry.getValue().setDescription("Test afterScan replacement.");
+					operation = pathEntry.getValue().getPut();
+					if (operation != null)
+						wrapCommand(pathEntry, operation);
+
+					operation = pathEntry.getValue().getDelete();
+					if (operation != null)
+						wrapCommand(pathEntry, operation);
+				} catch (Exception e)
+				{
+					e.printStackTrace();
 				}
 			}
+		}
+	}
 
+	private void wrapCommand(Map.Entry<String, PathItem> pathEntry, Operation operation) {
+
+		if (operation.getTags() != null && operation.getTags().contains(CyRESTSwagger.CyRESTSwaggerConfig.COMMANDS_TAG))
+		{
+			String description = operation.getDescription();
+			if (description == null) {
+				description = "";
+			}
+			description += getCommandLink();
+			operation.setDescription(description);
 		}
 
+		//Should be want to scan descriptions, parameter details, etc. and automatically generate links,
+		//this is how it could happen. Note that 
+		//operationEntry.getValue().setDescription("Test afterScan replacement.");
 	}
 
 	@Produces(MediaType.APPLICATION_JSON)
@@ -242,7 +307,8 @@ public class CyRESTSwagger extends AbstractResource
 	private static final String SWAGGER_INFO_DESCRIPTION =  "A RESTful service for accessing Cytoscape 3.\n\n";
 	
 	
-	@SwaggerDefinition(
+	/*
+	@OpenAPIDefinition(
 			info = @Info(
 					description = "A RESTful service for accessing Cytoscape 3.",
 					version = "V2.0.0",
@@ -258,13 +324,6 @@ public class CyRESTSwagger extends AbstractResource
 					//    url = "http://www.apache.org/licenses/LICENSE-2.0"
 					// )
 					),
-			//Be wary of this host parameter if you are using BeanConfig; use one or the other, as they will
-			//cause conflicts.
-			//host = "localhost:1234",
-			basePath = "",
-			consumes = {"application/json", "application/xml"},
-			produces = {"application/json", "application/xml"},
-			schemes = {SwaggerDefinition.Scheme.HTTP},
 			tags = 
 		{
 				@Tag(name = CyRESTSwaggerConfig.COLLECTIONS_TAG),
@@ -282,8 +341,9 @@ public class CyRESTSwagger extends AbstractResource
 				@Tag(name = CyRESTSwaggerConfig.VISUAL_PROPERTIES_TAG),
 				@Tag(name = CyRESTSwaggerConfig.VISUAL_STYLES_TAG)
 		}, 
-		externalDocs = @ExternalDocs(value = "Cytoscape", url = "http://cytoscape.org/")
+		externalDocs = @ExternalDocumentation(description = "Cytoscape", url = "http://cytoscape.org/")
 			)
+	*/
 	public static class CyRESTSwaggerConfig implements ReaderListener
 	{
 
@@ -304,12 +364,12 @@ public class CyRESTSwagger extends AbstractResource
 		public static final String CYTOSCAPE_SYSTEM_TAG = "Cytoscape System";
 
 		@Override
-		public void beforeScan(Reader arg0, Swagger arg1) 
+		public void beforeScan(OpenApiReader reader, OpenAPI openAPI) 
 		{
 
 		}
 
-		public void afterScan(Reader reader, Swagger swagger)
+		public void afterScan(OpenApiReader reader, OpenAPI openAPI)
 		{
 			
 		}

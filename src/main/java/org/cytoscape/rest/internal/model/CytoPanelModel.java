@@ -1,12 +1,11 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel(value="Cytoscape's GUI Panel Element")
+@Schema(description="Cytoscape's GUI Panel Element")
 public class CytoPanelModel {
-	@ApiModelProperty(value="Name of the Panel", allowableValues="SOUTH,EAST,WEST,SOUTH_WEST", required=true)
+	@Schema(description="Name of the Panel", allowableValues="SOUTH,EAST,WEST,SOUTH_WEST", requiredMode=Schema.RequiredMode.REQUIRED)
 	public String name;
-	@ApiModelProperty(value="State of the Panel", allowableValues="FLOAT,DOCK,HIDE", required=true)
+	@Schema(description="State of the Panel", allowableValues="FLOAT,DOCK,HIDE", requiredMode=Schema.RequiredMode.REQUIRED)
 	public String state;
 }

@@ -1,18 +1,17 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel
+@Schema
 public class NewColumnParameterModel {
-	@ApiModelProperty(value = "New Column Name", required=true)
+	@Schema(description = "New Column Name", requiredMode=Schema.RequiredMode.REQUIRED)
 	public String name;
-	@ApiModelProperty(value = "New Column Data Type", required=true)
+	@Schema(description = "New Column Data Type", requiredMode=Schema.RequiredMode.REQUIRED)
 	public ModelConstants.ColumnTypePrimitive type; //"data type, Double, String, Boolean, Long, Integer",
-	@ApiModelProperty(value="If true, make this column immutable.", required=false)
-	public Boolean immutable; //": "Optional: boolean value to specify immutable or not",
-	@ApiModelProperty(value="If true, make this a List column for the given type.", required=false)
+	@Schema(description="If true, make this column immutable.", requiredMode=Schema.RequiredMode.NOT_REQUIRED)
+	public Boolean immutable; //": "Optional: boolean description to specify immutable or not",
+	@Schema(description="If true, make this a List column for the given type.", requiredMode=Schema.RequiredMode.NOT_REQUIRED)
 	public Boolean list; //": "Optional.  If true, return create List column for the given type."
-	@ApiModelProperty(value="If true, make this a local column.", required=false)
+	@Schema(description="If true, make this a local column.", requiredMode=Schema.RequiredMode.NOT_REQUIRED)
 	public Boolean local;// "local": "Optional.  If true, it will be a local column"
 }

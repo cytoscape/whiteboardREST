@@ -35,6 +35,7 @@ import org.cytoscape.rest.internal.datamapper.TableMapper;
 import org.cytoscape.rest.internal.model.CountModel;
 import org.cytoscape.rest.internal.model.CyColumnModel;
 import org.cytoscape.rest.internal.model.CyTableWithRowsModel;
+import org.cytoscape.rest.internal.model.UpdateTableModel;
 import org.cytoscape.rest.internal.task.ResourceManager;
 import org.cytoscape.rest.internal.serializer.TableModule;
 
@@ -46,14 +47,17 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Component(service = CollectionResource.class, property = { "osgi.jaxrs.resource=true" })
-@Api(tags = {CyRESTSwagger.CyRESTSwaggerConfig.COLLECTIONS_TAG})
+@Tag(name = CyRESTSwagger.CyRESTSwaggerConfig.COLLECTIONS_TAG)
 @Path("/v1/collections")
 public class CollectionResource extends AbstractResource {
 
@@ -158,7 +162,7 @@ public class CollectionResource extends AbstractResource {
 	@GET
 	@Path("/count")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value="Get a count of all root networks.", notes="Returns a count of all root networks.")
+	@Operation(summary="Get a count of all root networks.", description="Returns a count of all root networks.")
 	public CountModel getCollectionCount() {
 		return new CountModel((long) getRootNetworks().size());
 	}
@@ -166,10 +170,10 @@ public class CollectionResource extends AbstractResource {
 	@GET
 	
 	@Produces(MediaType.APPLICATION_JSON + "; charset=UTF-8")
-	@ApiOperation(value="Get one or all root networks.", notes="Returns all Root Networks as an array of SUIDs.\n\n"
+	@Operation(summary="Get one or all root networks.", description="Returns all Root Networks as an array of SUIDs.\n\n"
 			+ "If a valid Sub-Network SUID is specified in the `subsuid` parameter, the list will contain only the SUID of that Sub-Network's Root Network.")
 	public Collection<Long> getCollectionsAsSUID(
-			@ApiParam(value="Sub-Network SUID. If this parameter is used, the Root Network of this Sub-Network will be returned.\n\n" + COLLECTION_ASCII_ART, required=false) @QueryParam("subsuid") Long subsuid) {
+			@Parameter(description="Sub-Network SUID. If this parameter is used, the Root Network of this Sub-Network will be returned.\n\n" + COLLECTION_ASCII_ART, required=false) @QueryParam("subsuid") Long subsuid) {
 		if(subsuid == null) {
 			// Return all collection SUIDs
 			return getRootNetworks().stream().map(root -> root.getSUID()).collect(Collectors.toSet());
@@ -205,9 +209,9 @@ public class CollectionResource extends AbstractResource {
 	@GET
 	@Path("/{networkId}.cx")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value="Get a collection as CX", notes="Returns a Root Network or Sub-Network in [CX format]("+CyRESTConstants.CX_FILE_FORMAT_LINK+").\n\nIf the `networkId` parameter is a Root Network, this returns that Root Network.\n\nIf the `networkId` parameter is a Sub-Network, this returns the Root Retwork that contains that Sub-Network.")
+	@Operation(summary="Get a collection as CX", description="Returns a Root Network or Sub-Network in [CX format]("+CyRESTConstants.CX_FILE_FORMAT_LINK+").\n\nIf the `networkId` parameter is a Root Network, this returns that Root Network.\n\nIf the `networkId` parameter is a Sub-Network, this returns the Root Retwork that contains that Sub-Network.")
 	public Response getCollectionAsCx(
-			@ApiParam(value="Root Network or Sub-Network SUID. \n\n" + COLLECTION_ASCII_ART) @PathParam("networkId") Long networkId) {
+			@Parameter(description="Root Network or Sub-Network SUID. \n\n" + COLLECTION_ASCII_ART) @PathParam("networkId") Long networkId) {
 		return getCX(networkId);
 	}
 
@@ -220,18 +224,18 @@ public class CollectionResource extends AbstractResource {
 	@GET
 	@Path("/{networkId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value="Get a collection", notes="", hidden=true)
+	@Operation(summary="Get a collection", description="", hidden=true)
 	public Response getCollection(
-			@ApiParam(value="Network SUID") @PathParam("networkId") Long networkId) {
+			@Parameter(description="Network SUID") @PathParam("networkId") Long networkId) {
 		return getCX(networkId);
 	}
 
 	@GET
 	@Path("/{networkId}/subnetworks")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value="Get SubNetworks", notes="Returns a list of SUIDs representing Sub-Networks that belong to the Root Network specified by the `networkId` parameter.")
+	@Operation(summary="Get SubNetworks", description="Returns a list of SUIDs representing Sub-Networks that belong to the Root Network specified by the `networkId` parameter.")
 	public Collection<Long> getSubnetworks(
-			@ApiParam(value="Root Network SUID\n\n" + COLLECTION_ASCII_ART) @PathParam("networkId") Long networkId
+			@Parameter(description="Root Network SUID\n\n" + COLLECTION_ASCII_ART) @PathParam("networkId") Long networkId
 			) {
 		final CyRootNetwork root = getRootNetwork(networkId);
 		final List<CySubNetwork> subnetworks = root.getSubNetworkList();
@@ -243,9 +247,14 @@ public class CollectionResource extends AbstractResource {
 	@GET
 	@Path("/{networkId}/tables")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value="Get Tables in a Root Network", notes="Returns a collection of tables belonging to the Root Network specified by the `networkId` parameter. ", response=CyTableWithRowsModel.class, responseContainer="list")
+	@Operation(summary="Get Tables in a Root Network", 
+	           description="Returns a collection of tables belonging to the Root Network specified by the `networkId` parameter. ", 
+	           responses = {
+								@ApiResponse(responseCode = "200", description = "List of tables with rows", 
+			                       content = { @Content(schema = @Schema(type="array", implementation=CyTableWithRowsModel.class))})
+	})
 	public Response getRootTables(
-			@ApiParam(value="Root Network SUID\n\n" + COLLECTION_ASCII_ART) @PathParam("networkId") Long networkId) {
+			@Parameter(description="Root Network SUID\n\n" + COLLECTION_ASCII_ART) @PathParam("networkId") Long networkId) {
 		final CyRootNetwork root = getRootNetwork(networkId);
 		final CyTable table = root.getDefaultNetworkTable();
 		final CyTable shared = root.getSharedNetworkTable();
@@ -259,22 +268,31 @@ public class CollectionResource extends AbstractResource {
 	@GET
 	@Path("/{networkId}/tables/{tableType}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value="Get a specific Table in a Root Network", 
-		response=CyTableWithRowsModel.class, 
-		notes="Returns either the `default` or `shared` table from the Root Network specified by the `networkId` parameter.\n\n" + TABLE_TYPE_NOTES_DESCRIPTION)
+	@Operation(summary="Get a specific Table in a Root Network", 
+	  responses = {
+			@ApiResponse(responseCode = "200", description = "Table with rows", 
+			             content = { @Content(schema = @Schema(implementation=CyTableWithRowsModel.class))})
+	  },
+		description="Returns either the `default` or `shared` table from the Root Network specified by the `networkId` parameter.\n\n" + TABLE_TYPE_NOTES_DESCRIPTION)
 	public Response getRootTable(
-			@ApiParam(value="Root Network SUID\n\n" + COLLECTION_ASCII_ART) @PathParam("networkId") Long networkId,
-			@ApiParam(value=TABLE_TYPE_DESCRIPTION, allowableValues="default,shared") @PathParam("tableType") String tableType) {
+			@Parameter(description="Root Network SUID\n\n" + COLLECTION_ASCII_ART) @PathParam("networkId") Long networkId,
+			@Parameter(description=TABLE_TYPE_DESCRIPTION, 
+			           content=@Content(
+				            schema=@Schema(allowableValues={"default","shared"})))
+			            @PathParam("tableType") String tableType) {
 		return getResponse(getTable(networkId, tableType));
 	}
 	
 	@DELETE
 	@Path("/{networkId}/tables/{tableType}/columns/{columnName}")
-	@ApiOperation(value="Delete a column", notes="Deletes the column specified by the `columnName` parameter from the table specified the `tableType` parameter in the Root Network specified by the `networkId` parameter.\n\n"  + TABLE_TYPE_NOTES_DESCRIPTION)
+	@Operation(summary="Delete a column", description="Deletes the column specified by the `columnName` parameter from the table specified the `tableType` parameter in the Root Network specified by the `networkId` parameter.\n\n"  + TABLE_TYPE_NOTES_DESCRIPTION)
 	public Response deleteColumn(
-			@ApiParam(value="Root Network SUID\n\n" + COLLECTION_ASCII_ART) @PathParam("networkId") Long networkId, 
-			@ApiParam(value=TABLE_TYPE_DESCRIPTION, allowableValues="default,shared") @PathParam("tableType") String tableType,
-			@ApiParam(value="Column Name") @PathParam("columnName") String columnName) {
+			@Parameter(description="Root Network SUID\n\n" + COLLECTION_ASCII_ART) @PathParam("networkId") Long networkId, 
+			@Parameter(description=TABLE_TYPE_DESCRIPTION, 
+			           content=@Content(
+				            schema=@Schema(allowableValues={"default","shared"})))
+			            @PathParam("tableType") String tableType,
+			@Parameter(description="Column Name") @PathParam("columnName") String columnName) {
 		
 		final CyTable table = getTable(networkId, tableType);
 		if (table != null) {
@@ -302,10 +320,18 @@ public class CollectionResource extends AbstractResource {
 	
 	@GET
 	@Path("/{networkId}/tables/{tableType}/columns")
-	@ApiOperation(value="Get a list of columns for a Root Network table", notes="Return a list of the columns in the table specified by the `tableType` parameter in the Root Network specified by the `networkId` parameter.\n\n"  + TABLE_TYPE_NOTES_DESCRIPTION, response=CyColumnModel.class, responseContainer="list")
+	@Operation(summary="Get a list of columns for a Root Network table", 
+	           description="Return a list of the columns in the table specified by the `tableType` parameter in the Root Network specified by the `networkId` parameter.\n\n"  + TABLE_TYPE_NOTES_DESCRIPTION, 
+	           responses = {
+								@ApiResponse(responseCode = "200", description = "List of columns", 
+			                       content = { @Content(schema = @Schema(type="array", implementation=CyColumnModel.class))})
+	})
 	public Response getColumns(
-			@ApiParam(value="Root Network SUID\n\n" + COLLECTION_ASCII_ART) @PathParam("networkId") Long networkId, 
-			@ApiParam(value=TABLE_TYPE_DESCRIPTION, allowableValues="default,shared") @PathParam("tableType") String tableType) {
+			@Parameter(description="Root Network SUID\n\n" + COLLECTION_ASCII_ART) @PathParam("networkId") Long networkId, 
+			@Parameter(description=TABLE_TYPE_DESCRIPTION, 
+			           content=@Content(
+				            schema=@Schema(allowableValues={"default","shared"})))
+			            @PathParam("tableType") String tableType) {
 		final CyTable table = getTable(networkId, tableType);
 		
 		try {
@@ -336,14 +362,16 @@ public class CollectionResource extends AbstractResource {
 	@PUT
 	@Path("/{networkId}/tables/{tableType}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation(value="Update table values", notes="Updates the values in a table. New columns will be created if they do not exist in the target table.\n\n"  + TABLE_TYPE_NOTES_DESCRIPTION)
-	@ApiImplicitParams(
-			@ApiImplicitParam(value="The data with which to update the table.", dataType="org.cytoscape.rest.internal.model.UpdateTableModel", paramType="body", required=true)
-			)
+	@Operation(summary="Update table values", description="Updates the values in a table. New columns will be created if they do not exist in the target table.\n\n"  + TABLE_TYPE_NOTES_DESCRIPTION)
+	@RequestBody(description="The data with which to update the table.", required=true, content = 
+							 @Content(schema=@Schema(type = "array", implementation=UpdateTableModel.class)))
 	public Response updateTable(
-			@ApiParam(value="Root Network SUID\n\n" + COLLECTION_ASCII_ART) @PathParam("networkId") Long networkId, 
-			@ApiParam(value=TABLE_TYPE_DESCRIPTION, allowableValues="default,shared") @PathParam("tableType") String tableType, 
-			@ApiParam(hidden=true) final InputStream is) {
+			@Parameter(description="Root Network SUID\n\n" + COLLECTION_ASCII_ART) @PathParam("networkId") Long networkId, 
+			@Parameter(description=TABLE_TYPE_DESCRIPTION, 
+			           content=@Content(
+				            schema=@Schema(allowableValues={"default","shared"})))
+			            @PathParam("tableType") String tableType,
+			@Parameter(hidden=true) final InputStream is) {
 		final CyTable table = getTable(networkId, tableType);
 		if(table == null) {
 			//throw getError("No such table type", new NullPointerException(), Response.Status.NOT_FOUND);

@@ -22,9 +22,11 @@ import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Resource to provide the status of installed Cytoscape apps. 
@@ -32,7 +34,7 @@ import io.swagger.annotations.ApiParam;
  * @servicetag Server status
  * 
  */
-@Api(tags = {CyRESTSwagger.CyRESTSwaggerConfig.APPS_TAG})
+@Tag(name = CyRESTSwagger.CyRESTSwaggerConfig.APPS_TAG)
 @Component(service = AppsResource.class, property = { "osgi.jaxrs.resource=true" })
 @Path("/v1/apps")
 public class AppsResource extends AbstractResource {
@@ -62,9 +64,14 @@ public class AppsResource extends AbstractResource {
   @GET
 	@Path("/")
   @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
-  @ApiOperation(value="Get installed Automation Accessible Cytoscape Apps",
-  notes="Returns installed Cytoscape Apps that have CyREST accessible Functions or Commands. If the `bundleState` parameter is used, this operation will only return Apps with an OSGi bundle state matching the passed parameter.")
-  public List<AppModel> getAppList(@ApiParam(value=AppModel.OSGI_BUNDLE_STATUS_DESCRIPTION, allowableValues = AppModel.OSGI_BUNDLE_STATUS_ALLOWABLE_VALUES, required = false) @QueryParam("bundleState") Integer bundleState) {
+  @Operation(summary="Get installed Automation Accessible Cytoscape Apps",
+  description="Returns installed Cytoscape Apps that have CyREST accessible Functions or Commands. If the `bundleState` parameter is used, this operation will only return Apps with an OSGi bundle state matching the passed parameter.")
+  public List<AppModel> getAppList(
+			@Parameter(description=AppModel.OSGI_BUNDLE_STATUS_DESCRIPTION, 
+			           content=@Content(
+				            schema=@Schema(allowableValues={"1","2","4","8","16","32"})),
+								 required=false)
+			@QueryParam("bundleState") Integer bundleState) {
     ArrayList<AppModel> list = new ArrayList<AppModel>();
     for (Bundle bundle : ResourceManager.appTracker.getAppBundles()) {
       AppModel appModel = new AppModel();
@@ -86,9 +93,14 @@ public class AppsResource extends AbstractResource {
   @GET
   @Path("/count")
   @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
-  @ApiOperation(value="Get the number of Automation Accessible Cytoscape Apps",
-  notes="Returns the number of installed Cytoscape Apps that have CyREST accessible Functions or Commands.  If the `bundleState` parameter is used, this operation will only count Apps with an OSGi bundle state matching the passed parameter.")
-  public CIResponse<CountModel> getAppCount(@ApiParam(value=AppModel.OSGI_BUNDLE_STATUS_DESCRIPTION, allowableValues = AppModel.OSGI_BUNDLE_STATUS_ALLOWABLE_VALUES, required=false) @QueryParam("bundleState") Integer bundleState) {
+  @Operation(summary="Get the number of Automation Accessible Cytoscape Apps",
+  description="Returns the number of installed Cytoscape Apps that have CyREST accessible Functions or Commands.  If the `bundleState` parameter is used, this operation will only count Apps with an OSGi bundle state matching the passed parameter.")
+  public CIResponse<CountModel> getAppCount(
+			@Parameter(description=AppModel.OSGI_BUNDLE_STATUS_DESCRIPTION, 
+			           content=@Content(
+				            schema=@Schema(allowableValues={"1","2","4","8","16","32"})),
+								 required=false)
+			@QueryParam("bundleState") Integer bundleState) {
     long count = 0l;
     for (Bundle bundle : ResourceManager.appTracker.getAppBundles()) {
       if (bundleState == null || bundle.getState() == bundleState) {

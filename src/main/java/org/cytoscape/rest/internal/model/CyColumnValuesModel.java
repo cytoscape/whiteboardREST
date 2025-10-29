@@ -2,13 +2,12 @@ package org.cytoscape.rest.internal.model;
 
 import java.util.List;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel(value="Cytoscape Column Values")
+@Schema(name="Cytoscape Column Values")
 public class CyColumnValuesModel {
-	@ApiModelProperty(value = "Column Name", required=true, example="Weight")
+	@Schema(description = "Column Name", requiredMode=Schema.RequiredMode.REQUIRED, example="Weight")
 	public String name;
-	@ApiModelProperty(value = "Column Values. These are formatted as JSON primitives.", required=true, example="9")
-	public List<?> values;
+	@Schema(description = "Column Values. These are formatted as JSON primitives.", requiredMode=Schema.RequiredMode.REQUIRED, example="9")
+	public List<?> descriptions;
 }

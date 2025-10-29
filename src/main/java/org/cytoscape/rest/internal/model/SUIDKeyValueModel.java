@@ -1,12 +1,11 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel
+@Schema
 public class SUIDKeyValueModel {
-	@ApiModelProperty(value="SUID of the object.")
+	@Schema(description="SUID of the object.")
 	public Long SUID;
-	@ApiModelProperty(value="Value, represented as a JSON primitive.")
-	public Object value;
+	@Schema(description="Value, represented as a JSON primitive.")
+	public Object description;
 }

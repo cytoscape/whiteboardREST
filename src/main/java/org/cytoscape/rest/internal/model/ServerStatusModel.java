@@ -2,7 +2,7 @@ package org.cytoscape.rest.internal.model;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @XmlRootElement
 public class ServerStatusModel {
@@ -20,7 +20,7 @@ public class ServerStatusModel {
 		this.setMemoryStatus(new MemoryStatusModel());
 	}
 	
-	@ApiModelProperty(value="`true` if this instance of Cytoscape has finished loading all installed apps. If this value is `false`, sending requests to App-dependent operations may not be safe.")
+	@Schema(description="`true` if this instance of Cytoscape has finished loading all installed apps. If this value is `false`, sending requests to App-dependent operations may not be safe.")
 	public boolean getAllAppsStarted() {
 		return allAppsStarted;
 	}
@@ -33,7 +33,7 @@ public class ServerStatusModel {
 	/**
 	 * @return the apiVersion
 	 */
-	@ApiModelProperty(value="CyREST API Version")
+	@Schema(description="CyREST API Version")
 	public String getApiVersion() {
 		return apiVersion;
 	}
@@ -49,7 +49,7 @@ public class ServerStatusModel {
 	/**
 	 * @return the numberOfCores
 	 */
-	@ApiModelProperty(value="Number of Processor Cores Available")
+	@Schema(description="Number of Processor Cores Available")
 	public Integer getNumberOfCores() {
 		return numberOfCores;
 	}
@@ -65,7 +65,7 @@ public class ServerStatusModel {
 	/**
 	 * @return the memoryStatus
 	 */
-	@ApiModelProperty(value="Details on memory use and availability.")
+	@Schema(description="Details on memory use and availability.")
 	public MemoryStatusModel getMemoryStatus() {
 		return memoryStatus;
 	}

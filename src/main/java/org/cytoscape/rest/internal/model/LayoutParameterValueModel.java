@@ -1,12 +1,11 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel()
+@Schema()
 public class LayoutParameterValueModel {
-	@ApiModelProperty(value="The name of the Parameter")
+	@Schema(description="The name of the Parameter")
 	public String name;
-	@ApiModelProperty(value="The value of this Parameter as a JSON primitive")
-	public Object value;
+	@Schema(description="The value of this Parameter as a JSON primitive")
+	public Object description;
 }

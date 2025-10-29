@@ -2,13 +2,13 @@ package org.cytoscape.rest.internal.model;
 
 import java.util.List;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class VisualStyleModel {
-	@ApiModelProperty(value="Name of the Visual Style", example="default")
+	@Schema(description="Name of the Visual Style", example="default")
 	public String title;
-	@ApiModelProperty(value="List of Visual Properties and their default values")
+	@Schema(description="List of Visual Properties and their default descriptions")
 	public List<VisualPropertyValueModel> defaults;
-	@ApiModelProperty(value="List of Mappings")
+	@Schema(description="List of Mappings")
 	public List<VisualStyleMappingModel> mappings;
 }

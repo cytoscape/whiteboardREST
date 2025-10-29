@@ -1,13 +1,12 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 
-@ApiModel
+@Schema
 public class FileModel 
 {
-	@ApiModelProperty(value="Full name of the file.", required=true)
+	@Schema(description="Full name of the file.", requiredMode=Schema.RequiredMode.REQUIRED)
 	public String file;
 	
 	public FileModel(String file)

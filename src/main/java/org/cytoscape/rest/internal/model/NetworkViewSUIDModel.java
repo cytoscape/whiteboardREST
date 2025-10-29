@@ -1,17 +1,16 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * 
  * @author David Otasek (dotasek.dev@gmail.com)
  *
  */
-@ApiModel
+@Schema
 public class NetworkViewSUIDModel 
 {
-	@ApiModelProperty(value="SUID of the Network View")
+	@Schema(description="SUID of the Network View")
 	public Long networkViewSUID;
 	
 	public NetworkViewSUIDModel(Long networkViewSUID) {

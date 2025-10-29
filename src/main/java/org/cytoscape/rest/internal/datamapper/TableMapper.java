@@ -277,15 +277,15 @@ public class TableMapper {
 			if (listType == String.class) {
 				list.add((K) value.asText());
 			} else if (listType == Boolean.class) {
-				list.add((K)new Boolean(value.asBoolean()));
+				list.add((K)Boolean.valueOf(value.asBoolean()));
 			} else if (listType == Double.class) {
-				list.add((K)new Double(value.asDouble()));
+				list.add((K)Double.valueOf(value.asDouble()));
 			} else if (listType == Integer.class) {
-				list.add((K)new Integer(value.asInt()));
+				list.add((K)Integer.valueOf(value.asInt()));
 			} else if (listType == Long.class) {
-				list.add((K)new Long(value.asLong()));
+				list.add((K)Long.valueOf(value.asLong()));
 			} else if (listType == Float.class) {
-				list.add((K)new Float(value.asDouble()));
+				list.add((K)Float.valueOf((float)value.asDouble()));
 			}
 		}
 	}

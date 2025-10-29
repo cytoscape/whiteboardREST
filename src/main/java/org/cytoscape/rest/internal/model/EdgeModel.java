@@ -1,16 +1,15 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel(value="Edge Data")
+@Schema(description="Edge Data")
 public class EdgeModel {
 	private EdgeDataModel data;
 
 	/**
 	 * @return the data
 	 */
-	@ApiModelProperty(value="Associated Data from the edge table. " + ModelConstants.ROW_DESCRIPTION)
+	@Schema(description="Associated Data from the edge table. " + ModelConstants.ROW_DESCRIPTION)
 	public EdgeDataModel getData() {
 		return data;
 	}

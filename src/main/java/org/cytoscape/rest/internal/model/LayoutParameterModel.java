@@ -1,12 +1,11 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel()
+@Schema()
 public class LayoutParameterModel extends LayoutParameterValueModel {
-	@ApiModelProperty(value="Long-form description of Parameter")
+	@Schema(description="Long-form description of Parameter")
 	public String description;
-	@ApiModelProperty(value="The type of Parameter, represented as the simple name of its Java class")
+	@Schema(description="The type of Parameter, represented as the simple name of its Java class")
 	public String type;
 }

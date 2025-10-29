@@ -2,6 +2,8 @@ package org.cytoscape.rest.internal;
 
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Dictionary;
 import java.util.HashMap;
@@ -142,7 +144,7 @@ public class CyActivator extends AbstractCyActivator implements AppsFinishedStar
 	 * but that's somewhat intentional.
 	 */
 	public void initiateCall() throws Exception {
-		URL url = new URL("http://"+ResourceManager.HOST+":"+ResourceManager.DEF_PORT_NUMBER+"/v1/");
+		URL url = new URI("http://"+ResourceManager.HOST+":"+ResourceManager.DEF_PORT_NUMBER+"/v1/").toURL();
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("GET");
 		int status = con.getResponseCode();
@@ -154,6 +156,7 @@ public class CyActivator extends AbstractCyActivator implements AppsFinishedStar
    * @param context
    * @throws Exception
    */
+	@SuppressWarnings({"rawtypes", "unchecked"})
   private void setPortConfig(BundleContext context) throws Exception
   {
 		port = "1234";

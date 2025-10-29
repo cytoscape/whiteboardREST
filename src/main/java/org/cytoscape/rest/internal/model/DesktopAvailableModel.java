@@ -1,10 +1,9 @@
 package org.cytoscape.rest.internal.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@ApiModel(value="Cytoscape Desktop Availability")
+@Schema(description="Cytoscape Desktop Availability")
 public class DesktopAvailableModel {
-	@ApiModelProperty(value="This is `true` if Cytoscape Desktop is available and `false` if Cytoscape is running in headless mode (not available yet).")
+	@Schema(description="This is `true` if Cytoscape Desktop is available and `false` if Cytoscape is running in headless mode (not available yet).")
 	public boolean isDesktopAvailable;
 }
