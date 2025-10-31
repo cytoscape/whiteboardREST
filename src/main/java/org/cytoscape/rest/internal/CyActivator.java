@@ -102,6 +102,7 @@ public class CyActivator extends AbstractCyActivator implements AppsFinishedStar
 		final CyNetworkViewFactory netViewFact = getService(bc, CyNetworkViewFactory.class);
     final CyNetworkManager netMan = getService(bc, CyNetworkManager.class);
 		final CyRootNetworkManager cyRootNetworkManager = getService(bc, CyRootNetworkManager.class);
+		final BundleResourceProvider resourceProvider = new BundleResourceProvider(bc);
 
 
 		// Extra readers and writers
@@ -113,7 +114,7 @@ public class CyActivator extends AbstractCyActivator implements AppsFinishedStar
     edgeListReaderFactoryProps.setProperty("ID", "edgeListReaderFactory");
     registerService(bc, edgeListReaderFactory, InputStreamTaskFactory.class, edgeListReaderFactoryProps);
 
-		resourceManager = new ResourceManager(registrar, automationAppTracker, 
+		resourceManager = new ResourceManager(registrar, resourceProvider, automationAppTracker, 
 				                                  cytoscapeJsReaderFactory, cytoscapeJsWriterFactory, port);
 
 		/*

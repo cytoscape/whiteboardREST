@@ -102,8 +102,8 @@ public class CyRESTSwagger extends AbstractResource
 	public void init(ResourceManager manager) {
 		super.init(manager);
 		appTracker = manager.getAutomationAppTracker();
-		// updateSwagger();
-		// buildSwagger();
+		updateSwagger();
+		buildSwagger();
 
 	}
 
@@ -119,8 +119,8 @@ public class CyRESTSwagger extends AbstractResource
 
 	protected void buildSwagger()
 	{
-		final Set<Class<?>> classes = new HashSet<Class<?>>(this.classes);
 		/*
+		final Set<Class<?>> classes = new HashSet<Class<?>>(this.classes);
 		BeanConfig beanConfig = new BeanConfig(){
 			public Set<Class<?>> classes()
 			{
