@@ -7,7 +7,7 @@
 	 	<maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
     	<dev.build.timestamp>${maven.build.timestamp}</dev.build.timestamp>
     	-->
-		<bundle.symbolicName>org.cytoscape.rest.simple-rest</bundle.symbolicName>
+		<bundle.symbolicName>org.cytoscape.rest.whiteboard-rest</bundle.symbolicName>
 		<bundle.namespace>org.cytoscape.rest</bundle.namespace>
 		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
 		<maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
@@ -25,7 +25,7 @@
 	</properties>
 
 	<groupId>org.cytoscape</groupId>
-	<artifactId>simple-rest</artifactId>
+	<artifactId>whiteboard-rest</artifactId>
 
 	<version>3.13.3-SNAPSHOT</version>
 	<packaging>bundle</packaging>
