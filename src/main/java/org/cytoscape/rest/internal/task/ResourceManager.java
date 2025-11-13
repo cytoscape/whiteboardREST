@@ -1,5 +1,6 @@
 package org.cytoscape.rest.internal.task;
 
+import org.cytoscape.rest.internal.BundleResourceProvider;
 import org.cytoscape.rest.internal.CyNetworkViewWriterFactoryManager;
 import org.cytoscape.rest.internal.task.AutomationAppTracker;
 
@@ -27,13 +28,16 @@ public class ResourceManager {
 	public static CyNetworkViewWriterFactoryManager viewWriterFactoryManager;
 	public static ServiceTracker cytoscapeJsWriterFactory;
 	public static ServiceTracker cytoscapeJsReaderFactory;
+	public static BundleResourceProvider resourceProvider; 
 
-	public ResourceManager(final CyServiceRegistrar serviceRegistrar, 
-			                   final AutomationAppTracker appTracker, 
+	public ResourceManager(final CyServiceRegistrar serviceRegistrar,
+			                   final BundleResourceProvider resourceProvider,
+			                   final AutomationAppTracker appTracker,
 												 final ServiceTracker cytoscapeJsReaderFactory,
 												 final ServiceTracker cytoscapeJsWriterFactory,
 												 final String cyRESTPort) {
 		ResourceManager.serviceRegistrar = serviceRegistrar;
+		ResourceManager.resourceProvider = resourceProvider;
 		ResourceManager.cyRESTPort = cyRESTPort;
 		ResourceManager.appTracker = appTracker;
 		ResourceManager.cytoscapeJsReaderFactory = cytoscapeJsReaderFactory;
@@ -66,6 +70,10 @@ public class ResourceManager {
 
 	public AutomationAppTracker getAutomationAppTracker() {
 		return appTracker;
+	}
+
+	public BundleResourceProvider getBundleResourceProvider() {
+		return resourceProvider;
 	}
 
 }
