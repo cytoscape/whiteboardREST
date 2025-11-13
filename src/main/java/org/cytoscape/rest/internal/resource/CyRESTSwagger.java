@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,22 +19,29 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.cytoscape.ci.CISwaggerConstants;
+import org.cytoscape.rest.internal.CyRESTConstants;
 import org.cytoscape.rest.internal.task.AutomationAppTracker;
 import org.cytoscape.rest.internal.task.ResourceManager;
-import org.osgi.framework.Bundle;
+import org.cytoscape.rest.internal.task.SwaggerResourceTracker;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.integration.OpenApiConfigurationException;
+import io.swagger.v3.oas.integration.SwaggerConfiguration;
 import io.swagger.v3.oas.integration.api.OpenApiReader;
 import io.swagger.v3.jaxrs2.integration.JaxrsAnnotationScanner;
+import io.swagger.v3.jaxrs2.integration.JaxrsOpenApiContextBuilder;
 import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
+import io.swagger.v3.jaxrs2.Reader;
 import io.swagger.v3.jaxrs2.ReaderListener;
 // import io.swagger.v3.oas.models.HttpMethod; -- use method attribute in @Operation
 
@@ -46,6 +55,7 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
@@ -81,16 +91,19 @@ public class CyRESTSwagger extends AbstractResource
 	private String swaggerDefinition;
 
 	final Set<Class<?>> classes = new HashSet<Class<?>>();
+	final Set<String> classNames = new HashSet<String>();
 
 	public void addResource(Class<?> clazz)
 	{
 		classes.add(clazz);
+		classNames.add(clazz.toString());
 		updateSwagger();
 	}
 
 	public void removeResource(Class<?> clazz)
 	{
 		classes.remove(clazz);
+		classNames.remove(clazz.toString());
 		updateSwagger();
 	}
 
@@ -102,9 +115,15 @@ public class CyRESTSwagger extends AbstractResource
 	public void init(ResourceManager manager) {
 		super.init(manager);
 		appTracker = manager.getAutomationAppTracker();
-		updateSwagger();
-		buildSwagger();
+		BundleContext bundleContext = manager.getBundleContext();
+		try {
+			SwaggerResourceTracker swaggerResourceTracker = new SwaggerResourceTracker(bundleContext,bundleContext.createFilter(CyRESTConstants.ANY_SERVICE_FILTER), this);
+			swaggerResourceTracker.open();
+		} catch (Exception e) {
+			System.err.println("Unable to initialize resource tracker");
+		}
 
+		updateSwagger();
 	}
 
 	protected void updateSwagger()
@@ -119,25 +138,8 @@ public class CyRESTSwagger extends AbstractResource
 
 	protected void buildSwagger()
 	{
-		/*
-		final Set<Class<?>> classes = new HashSet<Class<?>>(this.classes);
-		BeanConfig beanConfig = new BeanConfig(){
-			public Set<Class<?>> classes()
-			{
-				//Set<Class<?>> classes = new HashSet<Class<?>>();
-				//classes.addAll();
-				classes.add(CyRESTSwaggerConfig.class);
-				return classes;
-			}
-		};
 
-		//FIXME This needs to get set from the ResourceManager
-		beanConfig.setHost(ResourceManager.HOST + ":" + ResourceManager.cyRESTPort);
-		beanConfig.setScan(true);
-		beanConfig.setPrettyPrint(true);
-
-		Swagger swagger = beanConfig.getSwagger();
-		*/
+		System.out.println("buildSwagger == "+classes.size()+" classes");
 
 		String automationAppReport = appTracker.getMarkdownReport(); 
 
@@ -145,7 +147,9 @@ public class CyRESTSwagger extends AbstractResource
 				.info(new Info()
 						.title("CyREST API")
 						.description(SWAGGER_INFO_DESCRIPTION + automationAppReport))
-				.servers(Collections.singletonList(new Server().url(ResourceManager.HOST + ":" + ResourceManager.cyRESTPort)))
+				.servers(Collections.singletonList(new Server().url(ResourceManager.HOST + ":" + ResourceManager.cyRESTPort)));
+
+				/*
 				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.COLLECTIONS_TAG))
 				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.COMMANDS_TAG))
 				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.CYTOSCAPE_SYSTEM_TAG))
@@ -160,19 +164,43 @@ public class CyRESTSwagger extends AbstractResource
 				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.USER_INTERFACE_TAG))
 				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.VISUAL_PROPERTIES_TAG))
 				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.VISUAL_STYLES_TAG));
+				*/
 		
-		wrapCIResponses(openAPI);
-		addCommandLinks(openAPI);
+		SwaggerConfiguration oasConfiguration = new SwaggerConfiguration()
+				.openAPI(openAPI)
+				.resourcePackages(classNames)
+				.prettyPrint(true);
+
+		try {
+			new JaxrsOpenApiContextBuilder()
+				.openApiConfiguration(oasConfiguration)
+				.buildContext(true);
+		} catch (OpenApiConfigurationException e) {
+			System.err.println(e.toString());
+		}
+
+		Reader reader = new Reader(openAPI);
+
+		for (Class<?> clazz: classes) {
+			System.out.println("Reading class: "+clazz.toString());
+			reader.read(clazz, "/v1", null, false, null, null, new LinkedHashSet<String>(), new ArrayList<Parameter>(), new HashSet<Class<?>>());
+		}
+
+		// wrapCIResponses(openAPI);
+		// addCommandLinks(openAPI);
 
 		// serialization of the Swagger definition
 		try 
 		{
-			Json.mapper().enable(SerializationFeature.INDENT_OUTPUT);
-			this.swaggerDefinition = Json.mapper().writeValueAsString(openAPI);
+			// Json.mapper().enable(SerializationFeature.INDENT_OUTPUT);
+			// this.swaggerDefinition = Json.mapper().writeValueAsString(openAPI);
+			ObjectMapper mapper = Json.mapper();
+			this.swaggerDefinition = mapper.writeValueAsString(reader.getOpenAPI());
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
+
 	}
 
 	private void wrapCIResponses(OpenAPI openAPI) {
@@ -299,51 +327,17 @@ public class CyRESTSwagger extends AbstractResource
 	{
 		if (swaggerDefinition == null)
 		{
+			System.out.println("Building swagger");
 			buildSwagger();
 		}
+		System.out.println("Returning definition");
 		return swaggerDefinition;
 	}
 
+
+
 	private static final String SWAGGER_INFO_DESCRIPTION =  "A RESTful service for accessing Cytoscape 3.\n\n";
 	
-	
-	/*
-	@OpenAPIDefinition(
-			info = @Info(
-					description = "A RESTful service for accessing Cytoscape 3.",
-					version = "V2.0.0",
-					title = "CyREST API"
-					//termsOfService = "http://theweatherapi.io/terms.html",
-					// contact = @Contact(
-					//   name = "Rain Moore", 
-					//    email = "rain.moore@theweatherapi.io", 
-					//    url = "http://theweatherapi.io"
-					// ),
-					// license = @License(
-					//    name = "Apache 2.0", 
-					//    url = "http://www.apache.org/licenses/LICENSE-2.0"
-					// )
-					),
-			tags = 
-		{
-				@Tag(name = CyRESTSwaggerConfig.COLLECTIONS_TAG),
-				@Tag(name = CyRESTSwaggerConfig.COMMANDS_TAG),
-				@Tag(name = CyRESTSwaggerConfig.CYTOSCAPE_SYSTEM_TAG),
-				@Tag(name = CyRESTSwaggerConfig.GROUPS_TAG),
-				@Tag(name = CyRESTSwaggerConfig.LAYOUTS_TAG),
-				@Tag(name = CyRESTSwaggerConfig.NETWORKS_TAG),
-				@Tag(name = CyRESTSwaggerConfig.NETWORK_VIEWS_TAG),
-				@Tag(name = CyRESTSwaggerConfig.PROPERTIES_TAG),
-				@Tag(name = CyRESTSwaggerConfig.REST_SERVICE_TAG),
-				@Tag(name = CyRESTSwaggerConfig.SESSION_TAG),
-				@Tag(name = CyRESTSwaggerConfig.TABLES_TAG),	
-				@Tag(name = CyRESTSwaggerConfig.USER_INTERFACE_TAG),			
-				@Tag(name = CyRESTSwaggerConfig.VISUAL_PROPERTIES_TAG),
-				@Tag(name = CyRESTSwaggerConfig.VISUAL_STYLES_TAG)
-		}, 
-		externalDocs = @ExternalDocumentation(description = "Cytoscape", url = "http://cytoscape.org/")
-			)
-	*/
 	public static class CyRESTSwaggerConfig implements ReaderListener
 	{
 

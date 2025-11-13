@@ -8,6 +8,7 @@ import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
+import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
 
 import org.slf4j.Logger;
@@ -29,10 +30,12 @@ public class ResourceManager {
 	public static ServiceTracker cytoscapeJsWriterFactory;
 	public static ServiceTracker cytoscapeJsReaderFactory;
 	public static BundleResourceProvider resourceProvider; 
+	public static BundleContext bundleContext;
 
 	public ResourceManager(final CyServiceRegistrar serviceRegistrar,
 			                   final BundleResourceProvider resourceProvider,
 			                   final AutomationAppTracker appTracker,
+			                   final BundleContext bundleContext,
 												 final ServiceTracker cytoscapeJsReaderFactory,
 												 final ServiceTracker cytoscapeJsWriterFactory,
 												 final String cyRESTPort) {
@@ -40,6 +43,7 @@ public class ResourceManager {
 		ResourceManager.resourceProvider = resourceProvider;
 		ResourceManager.cyRESTPort = cyRESTPort;
 		ResourceManager.appTracker = appTracker;
+		ResourceManager.bundleContext = bundleContext;
 		ResourceManager.cytoscapeJsReaderFactory = cytoscapeJsReaderFactory;
 		ResourceManager.cytoscapeJsWriterFactory = cytoscapeJsWriterFactory;
 		ResourceManager.viewWriterFactoryManager = new CyNetworkViewWriterFactoryManager();
@@ -75,5 +79,7 @@ public class ResourceManager {
 	public BundleResourceProvider getBundleResourceProvider() {
 		return resourceProvider;
 	}
+
+	public BundleContext getBundleContext() { return bundleContext; }
 
 }

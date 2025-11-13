@@ -79,21 +79,6 @@ public abstract class AbstractResource {
 
 	public AbstractResource(final ResourceManager manager) {
 	}
-	/*
-	public AbstractResource(final ResourceManager manager) {
-		System.out.println("AbstractResource");
-		// AbstractResource.manager = manager;
-		AbstractResource.ciErrorFactory = new CIErrorFactoryImpl(null);
-    AbstractResource.ciExceptionFactory = new CIExceptionFactoryImpl();
-    AbstractResource.ciResponseFactory = new CIResponseFactoryImpl();
-		this.serializer = new GraphObjectSerializer();
-		AbstractResource.networkManager = getService(CyNetworkManager.class);
-		AbstractResource.networkViewManager = getService(CyNetworkViewManager.class);
-		AbstractResource.vmm = manager.getService(VisualMappingManager.class);
-		AbstractResource.cyEventHelper = getService(CyEventHelper.class);
-		System.out.println("AbstractResource -- done");
-	}
-	*/
 
 	public AbstractResource() {
 		System.out.println("AbstractResource()");

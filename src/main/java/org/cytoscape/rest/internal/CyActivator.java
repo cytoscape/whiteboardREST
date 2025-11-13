@@ -114,7 +114,7 @@ public class CyActivator extends AbstractCyActivator implements AppsFinishedStar
     edgeListReaderFactoryProps.setProperty("ID", "edgeListReaderFactory");
     registerService(bc, edgeListReaderFactory, InputStreamTaskFactory.class, edgeListReaderFactoryProps);
 
-		resourceManager = new ResourceManager(registrar, resourceProvider, automationAppTracker, 
+		resourceManager = new ResourceManager(registrar, resourceProvider, automationAppTracker, bc,
 				                                  cytoscapeJsReaderFactory, cytoscapeJsWriterFactory, port);
 
 		/*
