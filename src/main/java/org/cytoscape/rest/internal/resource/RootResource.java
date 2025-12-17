@@ -8,13 +8,16 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import org.osgi.service.component.annotations.Reference;
+
 import org.osgi.service.component.annotations.Component;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.cytoscape.rest.internal.task.ResourceManager;
 
@@ -22,19 +25,28 @@ import org.cytoscape.rest.internal.task.ResourceManager;
  * Root of the REST API server.
  * 
  */
+@ApplicationScoped
 @Component(service = RootResource.class, property = { "osgi.jaxrs.resource=true" })
 @Path("/")
-@Api(tags = {CyRESTSwagger.CyRESTSwaggerConfig.REST_SERVICE_TAG})
+@Tag(name = CyRESTSwagger.CyRESTSwaggerConfig.REST_SERVICE_TAG)
 public class RootResource extends AbstractResource {
 
 	static final String RESOURCE_URN = "";
 
-	public RootResource(ResourceManager manager) {
-		super(manager);
+	public RootResource() {
+		super();
 	}
 
-	public RootResource() {
+	@Reference
+	protected void init(ResourceManager manager) {
+		super.init(manager);
 	}
+
+	/*
+	public void init(ResourceManager manager) {
+		super.init(manager);
+	}
+	*/
 
 	@Override
 	public String getResourceURI() {
@@ -63,7 +75,7 @@ public class RootResource extends AbstractResource {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value="Get available REST API versions", notes="Returns a list of available REST API versions. Currently, v1 is the only available version")
+	@Operation(summary="Get available REST API versions", description="Returns a list of available REST API versions. Currently, v1 is the only available version")
 	public Map<String, String[]> getVersions() {
 		return VERSION_MAP;
 	}

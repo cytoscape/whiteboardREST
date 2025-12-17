@@ -14,6 +14,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import org.osgi.service.component.annotations.Reference;
+
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.rest.internal.model.FileModel;
 import org.cytoscape.rest.internal.model.MessageModel;
@@ -39,6 +42,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+@ApplicationScoped
 @Component(service = SessionResource.class, property = { "osgi.jaxrs.resource=true" })
 @Tag(name = CyRESTSwagger.CyRESTSwaggerConfig.SESSION_TAG)
 @Path("/v1/session")
@@ -46,9 +50,16 @@ public class SessionResource extends AbstractResource {
 
 	static final String RESOURCE_URN = "session";
 
+	@Reference
 	private CySessionManager sessionManager;
+
+	@Reference
 	private SaveSessionAsTaskFactory saveSessionAsTaskFactory;
+
+	@Reference
 	private OpenSessionTaskFactory openSessionTaskFactory;
+
+	@Reference
 	private NewSessionTaskFactory newSessionTaskFactory;
 
 	@Override
@@ -65,18 +76,16 @@ public class SessionResource extends AbstractResource {
 	
 	public static final int INTERNAL_METHOD_ERROR = 1;
 	
-
-
-	public SessionResource(ResourceManager manager) {
-		super(manager);
-		System.out.println("SessionResource");
-	}
-
 	public SessionResource() {
 		super();
-		System.out.println("SessionResource()");
 	}
 
+	@Reference
+	protected void init(ResourceManager manager) {
+		super.init(manager);
+	}
+
+	/*
 	public void init(ResourceManager manager) {
 		super.init(manager);
 		sessionManager = manager.getService(CySessionManager.class);
@@ -84,6 +93,7 @@ public class SessionResource extends AbstractResource {
 		openSessionTaskFactory = manager.getService(OpenSessionTaskFactory.class);;
 		newSessionTaskFactory = manager.getService(NewSessionTaskFactory.class);;
 	}
+	*/
 
 
 	@GET

@@ -10,6 +10,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import org.osgi.service.component.annotations.Reference;
+
 import org.cytoscape.ci.model.CIResponse;
 import org.cytoscape.rest.internal.CyRESTConstants;
 import org.cytoscape.rest.internal.model.AppModel;
@@ -34,6 +37,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * @servicetag Server status
  * 
  */
+@ApplicationScoped
 @Tag(name = CyRESTSwagger.CyRESTSwaggerConfig.APPS_TAG)
 @Component(service = AppsResource.class, property = { "osgi.jaxrs.resource=true" })
 @Path("/v1/apps")
@@ -45,10 +49,11 @@ public class AppsResource extends AbstractResource {
 		super();
 	}
 
-	public void init(final ResourceManager manager) {
+	@Reference
+	protected void init(ResourceManager manager) {
 		super.init(manager);
 	}
-    
+
 	@Override
   public String getResourceURI() {
     return RESOURCE_URN;
@@ -73,7 +78,7 @@ public class AppsResource extends AbstractResource {
 								 required=false)
 			@QueryParam("bundleState") Integer bundleState) {
     ArrayList<AppModel> list = new ArrayList<AppModel>();
-    for (Bundle bundle : ResourceManager.appTracker.getAppBundles()) {
+    for (Bundle bundle : manager.getAutomationAppTracker().getAppBundles()) {
       AppModel appModel = new AppModel();
       Object bundleNameObject = bundle.getHeaders().get(CyRESTConstants.BUNDLE_NAME);
       if (bundleNameObject != null) {
@@ -102,7 +107,7 @@ public class AppsResource extends AbstractResource {
 								 required=false)
 			@QueryParam("bundleState") Integer bundleState) {
     long count = 0l;
-    for (Bundle bundle : ResourceManager.appTracker.getAppBundles()) {
+    for (Bundle bundle : manager.getAutomationAppTracker().getAppBundles()) {
       if (bundleState == null || bundle.getState() == bundleState) {
         count++;
       }

@@ -1,6 +1,5 @@
 package org.cytoscape.rest.internal;
 
-import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,6 +16,10 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import jakarta.enterprise.context.ApplicationScoped;
+
 
 import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
@@ -32,6 +35,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.NetworkViewTaskFactory;
 
 import org.cytoscape.rest.internal.reader.EdgeListReaderFactory;
 import org.cytoscape.rest.internal.resource.AlgorithmicResource;
@@ -53,7 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class CyActivator extends AbstractCyActivator implements AppsFinishedStartingListener
+public class CyActivator extends AbstractCyActivator
 {
 
 	private CyServiceRegistrar registrar;
@@ -63,8 +67,9 @@ public class CyActivator extends AbstractCyActivator implements AppsFinishedStar
 	private	AutomationAppTracker automationAppTracker = null;
 	private ServiceTracker cytoscapeJsWriterFactory = null;
 	private ServiceTracker cytoscapeJsReaderFactory = null;
-	private	ResourceManager resourceManager = null;
 
+	@Reference
+	private	ResourceManager resourceManager = null;
 
   public CyActivator() {
     super();
@@ -74,11 +79,22 @@ public class CyActivator extends AbstractCyActivator implements AppsFinishedStar
 	public void start(BundleContext bc) {
 		registrar = getService(bc, CyServiceRegistrar.class);
 
-		registerService(bc, this, AppsFinishedStartingListener.class);
+		final StreamUtil streamUtil = getService(bc, StreamUtil.class);
+		final CyNetworkFactory netFact = getService(bc, CyNetworkFactory.class);
+		final CyNetworkViewFactory netViewFact = getService(bc, CyNetworkViewFactory.class);
+    final CyNetworkManager netMan = getService(bc, CyNetworkManager.class);
+		final CyRootNetworkManager cyRootNetworkManager = getService(bc, CyRootNetworkManager.class);
+		final BundleResourceProvider resourceProvider = new BundleResourceProvider(bc);
+
 
 		// We need to do these here because the CyServiceRegistrar doesn't provide the createFilter
 		// method.
 		try {
+			resourceManager = new ResourceManager(registrar, resourceProvider, bc,
+			 																			cytoscapeJsReaderFactory, cytoscapeJsWriterFactory, port);
+
+			registerService(bc, resourceManager, ResourceManager.class, new Properties());
+
 			automationAppTracker = new AutomationAppTracker(bc, bc.createFilter(CyRESTConstants.ANY_SERVICE_FILTER));
 			automationAppTracker.open();
 			bc.addBundleListener(automationAppTracker);
@@ -87,8 +103,12 @@ public class CyActivator extends AbstractCyActivator implements AppsFinishedStar
 			cytoscapeJsWriterFactory.open();
 			cytoscapeJsReaderFactory = new ServiceTracker(bc, bc.createFilter("(&(objectClass=org.cytoscape.io.read.InputStreamTaskFactory)(id=cytoscapejsNetworkReaderFactory))"), null);
 			cytoscapeJsReaderFactory.open();
+
+			resourceManager.setAutomationAppTracker(automationAppTracker);
+
 		} catch (Exception e) {
 			System.out.println("Unable to initialize Service Trackers");
+			e.printStackTrace();
 		}
 
 		try {
@@ -96,13 +116,6 @@ public class CyActivator extends AbstractCyActivator implements AppsFinishedStar
 		} catch (Exception e) {
 			System.out.println("Unable to set default port: "+e.toString());
 		}
-
-		final StreamUtil streamUtil = getService(bc, StreamUtil.class);
-		final CyNetworkFactory netFact = getService(bc, CyNetworkFactory.class);
-		final CyNetworkViewFactory netViewFact = getService(bc, CyNetworkViewFactory.class);
-    final CyNetworkManager netMan = getService(bc, CyNetworkManager.class);
-		final CyRootNetworkManager cyRootNetworkManager = getService(bc, CyRootNetworkManager.class);
-		final BundleResourceProvider resourceProvider = new BundleResourceProvider(bc);
 
 
 		// Extra readers and writers
@@ -114,18 +127,20 @@ public class CyActivator extends AbstractCyActivator implements AppsFinishedStar
     edgeListReaderFactoryProps.setProperty("ID", "edgeListReaderFactory");
     registerService(bc, edgeListReaderFactory, InputStreamTaskFactory.class, edgeListReaderFactoryProps);
 
-		resourceManager = new ResourceManager(registrar, resourceProvider, automationAppTracker, bc,
-				                                  cytoscapeJsReaderFactory, cytoscapeJsWriterFactory, port);
+		Thread thread = new Thread(new KickJaxb());
+		thread.start();
+	}
 
-		/*
-		new AlgorithmicResource(resourceManager);
-		new AppsResource(resourceManager);
-		new CollectionResource(resourceManager);
-		new MiscResource(resourceManager);
-		new NetworkNameResource(resourceManager);
-		new SessionResource(resourceManager);
-		*/
-
+	public class KickJaxb implements Runnable {
+		@Override
+		public void run() {
+			try {
+				Thread.sleep(5000);
+				initiateCall();
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+		}
 	}
 
 	@Override
@@ -145,7 +160,8 @@ public class CyActivator extends AbstractCyActivator implements AppsFinishedStar
 	 * but that's somewhat intentional.
 	 */
 	public void initiateCall() throws Exception {
-		URL url = new URI("http://"+ResourceManager.HOST+":"+ResourceManager.DEF_PORT_NUMBER+"/v1/").toURL();
+		URL url = new URI("http://"+ResourceManager.HOST+":"+ResourceManager.DEF_PORT_NUMBER+"/v1/version").toURL();
+		System.out.println("calling: "+url.toString());
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("GET");
 		int status = con.getResponseCode();
@@ -184,47 +200,5 @@ public class CyActivator extends AbstractCyActivator implements AppsFinishedStar
       throw new IllegalStateException("No available ConfigurationAdmin service.");
     }
   }
-
-	@Override
-  public void handleEvent(AppsFinishedStartingEvent event)  {
-		System.out.println("All apps loaded");
-
-		// Initiate all of our services.  We need to do this here bacause
-		// the whiteboard calls each constructor with no arguments, so this
-		// is how we pass arguments
-		//
-		for (Bundle bundle: automationAppTracker.getAppBundles()) {
-			for (Object obj: automationAppTracker.getServices(bundle)) {
-				// For each service that has an init method, call it
-				try {
-					Method method;
-					if ((method = getMethod(obj, "init", ResourceManager.class)) != null) {
-						method.invoke(obj,resourceManager);
-					} else if ((method = getMethod(obj, "init", CyServiceRegistrar.class)) != null) {
-						method.invoke(obj,registrar);
-					}
-				} catch (Exception iae) {
-					logger.error("Unable to initialize: "+obj);
-				}
-			}
-		}
-
-    try {
-      // initiateCall();
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-      logger.error("Unable to start CyREST", e);
-    }
-  }
-
-	private Method getMethod(Object obj, String methodName, Class<?>... parameterTypes) {
-		try {
-			Method method = obj.getClass().getMethod(methodName, parameterTypes);
-			return method;
-		} catch (NoSuchMethodException e) {
-			return null;
-		}
-	}
 
 }

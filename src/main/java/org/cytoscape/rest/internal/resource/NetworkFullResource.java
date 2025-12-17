@@ -10,6 +10,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import org.osgi.service.component.annotations.Reference;
+
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.rest.internal.CyRESTConstants;
 import org.slf4j.Logger;
@@ -25,6 +28,7 @@ import org.osgi.service.component.annotations.Component;
 import static org.cytoscape.rest.internal.resource.NetworkErrorConstants.*;
 import org.cytoscape.rest.internal.task.ResourceManager;
 
+@ApplicationScoped
 @Component(service = NetworkFullResource.class, property = { "osgi.jaxrs.resource=true" })
 @Tag(name = CyRESTSwagger.CyRESTSwaggerConfig.NETWORKS_TAG)
 @Path("/v1/networks.json")
@@ -36,9 +40,16 @@ public class NetworkFullResource extends AbstractResource {
 		super();
 	}
 
+	@Reference
+	protected void init(ResourceManager manager) {
+		super.init(manager);
+	}
+
+	/*
 	public void init(ResourceManager manager) {
 		super.init(manager);
 	}
+	*/
 
 	@Override
 	public String getResourceURI() {

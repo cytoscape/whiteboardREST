@@ -1,10 +1,10 @@
 package org.cytoscape.rest.internal.model;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@XmlRootElement
+@XmlRootElement(name="ServerStatusModel")
 public class ServerStatusModel {
 	
 	private boolean allAppsStarted;

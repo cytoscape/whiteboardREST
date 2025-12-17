@@ -18,6 +18,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import org.osgi.service.component.annotations.Reference;
+
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
@@ -44,6 +47,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import static org.cytoscape.rest.internal.resource.NetworkErrorConstants.*;
 
+@ApplicationScoped
 @Tag(name="networks")
 @Component(service = NetworkNameResource.class, property = { "osgi.jaxrs.resource=true" })
 @Path("/v1")
@@ -51,6 +55,7 @@ public class NetworkNameResource extends AbstractResource {
 
 	private static final String RESOURCE_URN = "networks";
 
+	@Reference
 	private CyNetworkManager networkManager;
 
 	@Override
@@ -65,19 +70,21 @@ public class NetworkNameResource extends AbstractResource {
     return logger;
 	}
 	
-	public NetworkNameResource(final ResourceManager manager) {
-		super(manager);
-	}
-	
 	public NetworkNameResource() {
 		super();
-		// this.networkManager = getService(CyNetworkManager.class);
 	}
 
+	@Reference
+	protected void init(ResourceManager manager) {
+		super.init(manager);
+	}
+
+	/*
 	public void init(final ResourceManager manager) {
 		super.init(manager);
 		this.networkManager = getService(CyNetworkManager.class);
 	}
+	*/
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON + "; charset=UTF-8")

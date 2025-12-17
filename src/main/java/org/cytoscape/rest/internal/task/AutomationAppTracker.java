@@ -1,5 +1,6 @@
 package org.cytoscape.rest.internal.task;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,6 +12,7 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.ext.Provider;
 
 import org.cytoscape.rest.internal.CyRESTConstants;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
@@ -26,6 +28,7 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class AutomationAppTracker extends ServiceTracker implements BundleListener
 {
@@ -85,26 +88,55 @@ public class AutomationAppTracker extends ServiceTracker implements BundleListen
 	
 	@Override
 	public Object addingService( ServiceReference reference ) {
+		if (reference == null) return null;
 		Object service = super.addingService(reference);
 		delegateAddService( reference, service );
 		return service;
 	}
 
 	private void addAutomationService(Bundle bundle, Object service) {
-		System.out.println("addAutomationService: "+service);
+		// System.out.println("addAutomationService: "+service);
 		Set<Object> services = bundles.get(bundle);
 		if (services == null) {
 			services = new HashSet<Object>();
 		}
 		services.add(service);
+		initService(service);
 		bundles.put(bundle, services);
+	}
+
+	private void initService(Object service) {
+		// System.out.println("initService: "+service);
+		/*
+		try {
+			Method method;
+			if ((method = getMethod(service, "init", ResourceManager.class)) != null) {
+				// System.out.println("Calling "+service+".init(ResourceManager)");
+				method.invoke(service,manager);
+				// System.out.println("done");
+			} else if ((method = getMethod(service, "init", CyServiceRegistrar.class)) != null) {
+				method.invoke(service,manager.getServiceRegistrar());
+			}
+		} catch (Exception iae) {
+			logger.error("Unable to initialize: "+service);
+		}
+		*/
+	}
+
+	private Method getMethod(Object obj, String methodName, Class<?>... parameterTypes) {
+		try {
+			Method method = obj.getClass().getMethod(methodName, parameterTypes);
+			return method;
+		} catch (NoSuchMethodException e) {
+			return null;
+		}
 	}
 
 	private void addCommand(ServiceReference serviceReference) {
 		
 		String command = serviceReference.getProperty(ServiceProperties.COMMAND).toString();
 		String commandNamespace = serviceReference.getProperty(ServiceProperties.COMMAND_NAMESPACE).toString();
-		System.out.println("addCommand: "+commandNamespace+" "+command);
+		// System.out.println("addCommand: "+commandNamespace+" "+command);
 		Map<String, Bundle> commandMap = commandBundles.get(commandNamespace);
 		if (commandMap == null) {
 			commandMap = new HashMap<String, Bundle>();

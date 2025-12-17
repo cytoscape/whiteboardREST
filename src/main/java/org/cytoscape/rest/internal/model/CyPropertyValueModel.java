@@ -6,6 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class CyPropertyValueModel {
 	
 	@Schema(description="Value of the CyProperty")
-	public String description;
+	public String value;
 	
 }

@@ -8,12 +8,17 @@ import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import org.osgi.framework.BundleContext;
+
+import org.osgi.service.component.annotations.Component;
 import org.osgi.util.tracker.ServiceTracker;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//@ApplicationScoped
+//@Component(service=ResourceManager.class, immediate=true)
 public class ResourceManager {
  private final static Logger logger = LoggerFactory.getLogger(ResourceManager.class);
 
@@ -23,33 +28,63 @@ public class ResourceManager {
   // Note; this used to be used
   public static final String HOST = "localhost";
 
-	public static String cyRESTPort;
-	public static CyServiceRegistrar serviceRegistrar;
-	public static AutomationAppTracker appTracker;
-	public static CyNetworkViewWriterFactoryManager viewWriterFactoryManager;
-	public static ServiceTracker cytoscapeJsWriterFactory;
-	public static ServiceTracker cytoscapeJsReaderFactory;
-	public static BundleResourceProvider resourceProvider; 
-	public static BundleContext bundleContext;
+	public String cyRESTPort;
+
+	public CyServiceRegistrar serviceRegistrar;
+	public AutomationAppTracker appTracker;
+	public CyNetworkViewWriterFactoryManager viewWriterFactoryManager;
+	public ServiceTracker cytoscapeJsWriterFactory;
+	public ServiceTracker cytoscapeJsReaderFactory;
+	public BundleResourceProvider resourceProvider; 
+	public BundleContext bundleContext;
+
+	/*
+	public ResourceManager() {
+	}
+	*/
 
 	public ResourceManager(final CyServiceRegistrar serviceRegistrar,
 			                   final BundleResourceProvider resourceProvider,
-			                   final AutomationAppTracker appTracker,
 			                   final BundleContext bundleContext,
 												 final ServiceTracker cytoscapeJsReaderFactory,
 												 final ServiceTracker cytoscapeJsWriterFactory,
 												 final String cyRESTPort) {
-		ResourceManager.serviceRegistrar = serviceRegistrar;
-		ResourceManager.resourceProvider = resourceProvider;
-		ResourceManager.cyRESTPort = cyRESTPort;
-		ResourceManager.appTracker = appTracker;
-		ResourceManager.bundleContext = bundleContext;
-		ResourceManager.cytoscapeJsReaderFactory = cytoscapeJsReaderFactory;
-		ResourceManager.cytoscapeJsWriterFactory = cytoscapeJsWriterFactory;
-		ResourceManager.viewWriterFactoryManager = new CyNetworkViewWriterFactoryManager();
+		this.serviceRegistrar = serviceRegistrar;
+		this.resourceProvider = resourceProvider;
+		this.cyRESTPort = cyRESTPort;
+		this.bundleContext = bundleContext;
+		this.cytoscapeJsReaderFactory = cytoscapeJsReaderFactory;
+		this.cytoscapeJsWriterFactory = cytoscapeJsWriterFactory;
+		this.viewWriterFactoryManager = new CyNetworkViewWriterFactoryManager();
 
     serviceRegistrar.registerServiceListener(viewWriterFactoryManager, "addFactory", "removeFactory",
         CyNetworkViewWriterFactory.class);
+	}
+
+	/*
+	public void init(final CyServiceRegistrar serviceRegistrar,
+			             final BundleResourceProvider resourceProvider,
+			             final BundleContext bundleContext,
+									 final ServiceTracker cytoscapeJsReaderFactory,
+									 final ServiceTracker cytoscapeJsWriterFactory,
+									 final String cyRESTPort) {
+
+		System.out.println("ResourceManager: init");
+		this.serviceRegistrar = serviceRegistrar;
+		this.resourceProvider = resourceProvider;
+		this.cyRESTPort = cyRESTPort;
+		this.bundleContext = bundleContext;
+		this.cytoscapeJsReaderFactory = cytoscapeJsReaderFactory;
+		this.cytoscapeJsWriterFactory = cytoscapeJsWriterFactory;
+		this.viewWriterFactoryManager = new CyNetworkViewWriterFactoryManager();
+
+    serviceRegistrar.registerServiceListener(viewWriterFactoryManager, "addFactory", "removeFactory",
+        CyNetworkViewWriterFactory.class);
+	}
+	*/
+
+	public CyServiceRegistrar getServiceRegistrar() {
+		return serviceRegistrar;
 	}
 
 	public <T> T getService(Class<? extends T> clazz) {
@@ -72,9 +107,19 @@ public class ResourceManager {
     return (InputStreamTaskFactory) cytoscapeJsReaderFactory.getService();
 	}
 
+	public CyNetworkViewWriterFactoryManager getViewWriterFactoryManager() {
+		return this.viewWriterFactoryManager;
+	}
+
 	public AutomationAppTracker getAutomationAppTracker() {
 		return appTracker;
 	}
+
+	public void setAutomationAppTracker(AutomationAppTracker appTracker) {
+		this.appTracker = appTracker;
+	}
+
+	public String getCyRESTPort() { return cyRESTPort; }
 
 	public BundleResourceProvider getBundleResourceProvider() {
 		return resourceProvider;

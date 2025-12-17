@@ -9,6 +9,8 @@ import java.util.Set;
 
 import java.util.stream.Collectors;
 
+import org.osgi.service.component.annotations.Reference;
+
 import org.cytoscape.ci.CIErrorFactory;
 import org.cytoscape.ci.CIExceptionFactory;
 import org.cytoscape.ci.CIResponseFactory;
@@ -65,6 +67,7 @@ public abstract class AbstractResource {
   protected static final String QUERY_STRING_DESCRIPTION = "The value to be matched.";
 
 	public ResourceManager manager;
+
 	public CIErrorFactory ciErrorFactory;
 	public CIExceptionFactory ciExceptionFactory;
 	public CIResponseFactory ciResponseFactory;
@@ -81,11 +84,13 @@ public abstract class AbstractResource {
 	}
 
 	public AbstractResource() {
-		System.out.println("AbstractResource()");
+		// System.out.println("AbstractResource()");
 	}
 
-	public void init(ResourceManager manager) {
-		System.out.println("AbstractResource init");
+	/*
+	 * Child classes must call this
+	 */
+	protected void init(ResourceManager manager) {
 		this.manager = manager;
 		this.ciErrorFactory = new CIErrorFactoryImpl(null);
     this.ciExceptionFactory = new CIExceptionFactoryImpl();
@@ -96,6 +101,21 @@ public abstract class AbstractResource {
 		this.vmm = manager.getService(VisualMappingManager.class);
 		this.cyEventHelper = getService(CyEventHelper.class);
 	}
+
+	/*
+	public void init(ResourceManager manager) {
+		System.out.println("AbstractResource init");
+		// this.manager = manager;
+		this.ciErrorFactory = new CIErrorFactoryImpl(null);
+    this.ciExceptionFactory = new CIExceptionFactoryImpl();
+    this.ciResponseFactory = new CIResponseFactoryImpl();
+		this.serializer = new GraphObjectSerializer();
+		this.networkViewManager = getService(CyNetworkViewManager.class);
+		this.networkManager = getService(CyNetworkManager.class);
+		this.vmm = manager.getService(VisualMappingManager.class);
+		this.cyEventHelper = getService(CyEventHelper.class);
+	}
+	*/
 
 	public <T> T getService(Class<? extends T> clazz) {
     return manager.getService(clazz);

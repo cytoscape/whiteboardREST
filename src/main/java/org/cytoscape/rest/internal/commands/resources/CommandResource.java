@@ -20,6 +20,9 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import org.osgi.service.component.annotations.Reference;
+
 import org.cytoscape.ci.CIErrorFactory;
 import org.cytoscape.ci.CIExceptionFactory;
 import org.cytoscape.ci.CIResponseFactory;
@@ -63,6 +66,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * 
  *
  */
+@ApplicationScoped
 @Component(service = CommandResource.class, property = { "osgi.jaxrs.resource=true" })
 @Tag(name = CyRESTSwagger.CyRESTSwaggerConfig.COMMANDS_TAG)
 @Path("/v1/commands")
@@ -90,16 +94,22 @@ public class CommandResource extends AbstractResource
 	
 	protected URI logLocation;
 
+	@Reference
 	private AvailableCommands available;
 
+	@Reference
 	private CommandExecutorTaskFactory ceTaskFactory;
 
+	@Reference
 	private SynchronousTaskManager<Object> taskManager;
 
+	//@Reference
 	protected CIResponseFactory ciResponseFactory;
 	
+	//@Reference
 	protected CIErrorFactory ciErrorFactory;
 	
+	//@Reference
 	protected CIExceptionFactory ciExceptionFactory;
 	
 	public static final String JSON_COMMAND_RESOURCE_URI = "handle-json-command";
@@ -108,6 +118,17 @@ public class CommandResource extends AbstractResource
 		super();
 	}
 
+	@Reference
+	protected void init(ResourceManager manager) {
+		super.init(manager);
+
+		// We need to initialize these explicitly
+		ciResponseFactory = manager.getService(CIResponseFactory.class);
+		ciErrorFactory = manager.getService(CIErrorFactory.class);
+		ciExceptionFactory = manager.getService(CIExceptionFactory.class);
+	}
+
+	/*
 	public void init(final ResourceManager manager) {
 		super.init(manager);
 		available = manager.getService(AvailableCommands.class);
@@ -117,6 +138,7 @@ public class CommandResource extends AbstractResource
 		ciErrorFactory = manager.getService(CIErrorFactory.class);
 		ciExceptionFactory = manager.getService(CIExceptionFactory.class);
 	}
+	*/
 	
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)

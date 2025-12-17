@@ -27,11 +27,18 @@
 	<groupId>org.cytoscape</groupId>
 	<artifactId>whiteboard-rest</artifactId>
 
-	<version>3.13.3-SNAPSHOT</version>
+	<version>3.13.3</version>
 	<packaging>bundle</packaging>
-	<name>simpleREST</name>
+	<name>whiteboardREST</name>
 
 	<repositories>
+
+    <repository>
+      <id>apache_maven2</id>
+      <url>https://repo.maven.apache.org/maven2/</url>
+      <releases><enabled>true</enabled></releases>
+    </repository>
+
 		<repository>
 			<id>cytoscape_releases</id>
 			<snapshots>
@@ -54,11 +61,13 @@
 			<name>Cytoscape Snapshots</name>
 			<url>https://nrnb-nexus.ucsd.edu/repository/cytoscape_snapshots/</url>
 		</repository>
+
     <repository>
       <id>mvnrepository.com</id>
       <name>mvnrepository.com</name>
       <url>https://mvnrepository.com/artifact/</url>
     </repository>
+
 
 	</repositories>
 
@@ -114,6 +123,9 @@
             <Embed-Dependency>*;scope=!provided|test;groupId=!org.cytoscape</Embed-Dependency>
 						<Import-Package>*;resolution:=optional</Import-Package>
 						<Private-Package>${bundle.namespace}.internal.*</Private-Package>
+            <!--Require-Capability>
+              osgi.extender; filter:="(osgi.extender=pax.cdi)"
+            </Require-Capability-->
 					</instructions>
 				</configuration>
 			</plugin>
@@ -191,11 +203,18 @@
     </dependency>
 
     <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.service.cdi</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+
+    <dependency>
        <groupId>org.osgi</groupId>
        <artifactId>org.osgi.service.component.annotations</artifactId>
        <version>1.4.0</version>
        <scope>provided</scope>
      </dependency>
+
      <dependency>
         <groupId>javax.ws.rs</groupId>
         <artifactId>javax.ws.rs-api</artifactId>
@@ -225,6 +244,24 @@
       <groupId>io.swagger.core.v3</groupId>
       <artifactId>swagger-integration</artifactId>
       <version>2.2.39</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.swagger.core.v3</groupId>
+      <artifactId>swagger-core</artifactId>
+      <version>2.2.39</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.20.0</version>
+    </dependency>
+
+    <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jsr310</artifactId>
+        <version>2.20.1</version>
     </dependency>
 
     <!--dependency>
@@ -282,6 +319,39 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- dependency>
+      <groupId>jakarta.ws.rs</groupId>
+      <artifactId>jakarta.ws.rs-api</artifactId>
+      <version>4.0.0</version>
+      <scope>provided</scope>
+    </dependency-->
+
+    <dependency>
+      <groupId>jakarta.enterprise</groupId>
+      <artifactId>jakarta.enterprise.cdi-api</artifactId>
+      <version>4.0.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.inject</groupId>
+      <artifactId>jakarta.inject-api</artifactId>
+      <version>2.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/tools.jackson.module/jackson-module-jakarta-xmlbind-annotations -->
+  <dependency>
+      <groupId>tools.jackson.module</groupId>
+      <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
+      <version>3.0.3</version>
+  </dependency>
+
+  <!--dependency>
+    <groupId>com.fasterxml.jackson.module</groupId>
+    <artifactId>jackson-module-jaxb-annotations</artifactId>
+    <version>provided</version>
+  </dependency-->
+
     <!--dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
@@ -293,13 +363,6 @@
       <artifactId>jackson-databind</artifactId>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.module</groupId> 
-      <artifactId>jackson-module-jaxb-annotations</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-
 
 	</dependencies>
 </project>

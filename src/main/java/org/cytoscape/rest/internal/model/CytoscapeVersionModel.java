@@ -1,11 +1,11 @@
 package org.cytoscape.rest.internal.model;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description="Cytoscape and CyREST API Versions")
-@XmlRootElement
+@XmlRootElement(name="version")
 public class CytoscapeVersionModel {
 	private String apiVersion;
 	public void setApiVersion(String apiVersion) {

@@ -23,6 +23,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import org.osgi.service.component.annotations.Reference;
+
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.rest.internal.ClearAllEdgeBends;
 import org.cytoscape.rest.internal.EdgeBundler;
@@ -74,17 +77,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * Runs Cytoscape tasks, such as layouts or apply Style.
  * 
  */
+@ApplicationScoped
 @Tag(name="Algorithms")
-@Component(service = AlgorithmicResource.class, property = { "osgi.jaxrs.resource=true" })
+@Component(service = AlgorithmicResource.class, property = { "osgi.jaxrs.resource=true" }, immediate=true)
 @Path("/v1/apply")
 public class AlgorithmicResource extends AbstractResource {
 
 	private TaskMonitor headlessTaskMonitor;
 
+	@Reference
 	private CyLayoutAlgorithmManager layoutManager;
 
+	@Reference(target = "(title=Fit Content)")
 	private NetworkViewTaskFactory fitContent;
 
+	@Reference
 	private CyNetworkViewManager networkViewManager;
 
 	private EdgeBundler edgeBundler;
@@ -93,27 +100,22 @@ public class AlgorithmicResource extends AbstractResource {
 
 	private static final String RESOURCE_URN = "apply";
 
-	/*
-	public AlgorithmicResource(final ResourceManager manager) {
-		super(manager);
-		AlgorithmicResource.headlessTaskMonitor = new HeadlessTaskMonitor();
-		AlgorithmicResource.layoutManager = manager.getService(CyLayoutAlgorithmManager.class);
-		AlgorithmicResource.fitContent = manager.getService(NetworkViewTaskFactory.class, "(title=Fit Content)");
-		AlgorithmicResource.networkViewManager = manager.getService(CyNetworkViewManager.class);
+	public AlgorithmicResource() {
+		super();
+		headlessTaskMonitor = new HeadlessTaskMonitor();
+	}
+
+	@Reference
+	protected void init(ResourceManager manager) {
+		super.init(manager);
 
 		final NetworkTaskFactory edgeBundlerTF = manager.getService(NetworkTaskFactory.class, "(title=All Nodes and Edges)");
 		final NetworkViewCollectionTaskFactory clearEdgeBends = manager.getService(NetworkViewCollectionTaskFactory.class, "(id=clearAllEdgeBendsFactory)");
 
-
-		AlgorithmicResource.edgeBundler = new EdgeBundlerImpl(edgeBundlerTF);
-		AlgorithmicResource.clearAllEdgeBends = new ClearAllEdgeBendsImpl(clearEdgeBends);
-	}
-	*/
-
-	public AlgorithmicResource() {
-		super();
+		edgeBundler = new EdgeBundlerImpl(edgeBundlerTF);
 	}
 
+	/*
 	public void init(final ResourceManager manager) {
 		super.init(manager);
 		headlessTaskMonitor = new HeadlessTaskMonitor();
@@ -126,6 +128,7 @@ public class AlgorithmicResource extends AbstractResource {
 
 		edgeBundler = new EdgeBundlerImpl(edgeBundlerTF);
 	}
+	*/
 
 	@Override
 	public String getResourceURI() {

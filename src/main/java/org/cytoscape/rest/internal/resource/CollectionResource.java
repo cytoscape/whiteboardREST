@@ -21,6 +21,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import org.osgi.service.component.annotations.Reference;
+
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyNetwork;
@@ -56,6 +59,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+@ApplicationScoped
 @Component(service = CollectionResource.class, property = { "osgi.jaxrs.resource=true" })
 @Tag(name = CyRESTSwagger.CyRESTSwaggerConfig.COLLECTIONS_TAG)
 @Path("/v1/collections")
@@ -106,22 +110,33 @@ public class CollectionResource extends AbstractResource {
 		tableMapper = null;
 	}
 
+	@Reference
 	private CyNetworkManager networkManager;
+
+	@Reference
 	private CyRootNetworkManager cyRootNetworkManager;
 
 	public CollectionResource() {
 		super();
+		mapper = new ObjectMapper();
+		this.tableMapper = new TableMapper();
 	}
 
+	@Reference
+	protected void init(ResourceManager manager) {
+		super.init(manager);
+	}
+
+	/*
 	public void init(ResourceManager manager) {
 		System.out.println("CollectionResource init");
 		super.manager = manager;
-		mapper = new ObjectMapper();
 		this.tableMapper = new TableMapper();
 		this.mapper.registerModule(new TableModule());
 		this.networkManager = getService(CyNetworkManager.class);
 		this.cyRootNetworkManager = getService(CyRootNetworkManager.class);
 	}
+	*/
 
 	private final Set<CyRootNetwork> getRootNetworks() {
 		return networkManager.getNetworkSet().stream().map(net -> cyRootNetworkManager.getRootNetwork(net))
@@ -415,7 +430,7 @@ public class CollectionResource extends AbstractResource {
 	private final Response getCX(final Long networkId) {
 		
 		final CyNetworkViewWriterFactory cxWriterFactory = 
-				ResourceManager.viewWriterFactoryManager.getFactory(CyNetworkViewWriterFactoryManager.CX_WRITER_ID);
+				manager.getViewWriterFactoryManager().getFactory(CyNetworkViewWriterFactoryManager.CX_WRITER_ID);
 		
 		if (cxWriterFactory == null) {
 			//throw getError("CX writer is not supported.  Please install CX Support App to use this API.",
@@ -461,7 +476,7 @@ public class CollectionResource extends AbstractResource {
 
 	private final String getNetworkViewsAsCX(final CyRootNetwork root) {
 		final CyNetworkViewWriterFactory cxWriterFactory = 
-				ResourceManager.viewWriterFactoryManager.getFactory(CyNetworkViewWriterFactoryManager.CX_WRITER_ID);
+				manager.getViewWriterFactoryManager().getFactory(CyNetworkViewWriterFactoryManager.CX_WRITER_ID);
 		
 		final ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		CyWriter writer = cxWriterFactory.createWriter(stream, root.getSubNetworkList().get(0));

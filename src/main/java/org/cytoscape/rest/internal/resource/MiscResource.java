@@ -11,6 +11,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import org.osgi.service.component.annotations.Reference;
+
 import org.cytoscape.property.CyProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,13 +32,15 @@ import org.cytoscape.rest.internal.task.ResourceManager;
  * @servicetag Server status
  * 
  */
-@Component(service = MiscResource.class, property = { "osgi.jaxrs.resource=true" })
+@ApplicationScoped
+@Component(service = MiscResource.class, property = { "osgi.jaxrs.resource=true" }, immediate=true)
 @Path("/v1")
 public class MiscResource extends AbstractResource {
 	
 	private static final String RESOURCE_URN = "";
 
-	static CyProperty<Properties> props;
+	@Reference(target = "(cyPropertyName=cytoscape3.props)")
+	CyProperty<Properties> props;
 
 	@Override
   public String getResourceURI() {
@@ -51,11 +56,12 @@ public class MiscResource extends AbstractResource {
 
 	public MiscResource() {
 		super();
+		System.out.println("MiscResource");
 	}
 
-	public void init(final ResourceManager manager) {
+	@Reference
+	protected void init(ResourceManager manager) {
 		super.init(manager);
-		this.props = getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 	}
 
   @GET
@@ -81,7 +87,6 @@ public class MiscResource extends AbstractResource {
 	@Produces("application/json")
 	@GET
 	public CytoscapeVersionModel getCytoscapeVersion() {
-
 		if (props == null) {
 			throw new InternalServerErrorException("Could not find CyProperty object.");
 		}

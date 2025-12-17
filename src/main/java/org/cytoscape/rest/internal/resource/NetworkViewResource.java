@@ -33,6 +33,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import org.osgi.service.component.annotations.Reference;
+
 import org.cytoscape.ci.model.CIResponse;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyWriter;
@@ -92,6 +95,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * TODO: add custom view information section
  * 
  */
+@ApplicationScoped
 @Tag(name = CyRESTSwagger.CyRESTSwaggerConfig.NETWORK_VIEWS_TAG)
 @Component(service = NetworkViewResource.class, property = { "osgi.jaxrs.resource=true" })
 @Path("/v1/networks/{networkId}/views")
@@ -153,10 +157,12 @@ public class NetworkViewResource extends AbstractResource {
 	private static final String BYPASS_NOTES = "Note that this sets the Visual Properties temporarily unless the `bypass` parameter is set to `true`. If the `bypass` parameter is set to `true`, the Visual Style will be overridden by these Visual Property values. If the `bypass` parameter is not used or is set to `false`, any Visual Properties set will return "
 			+ "to those defined in the Visual Style if the Network View is updated.\n";
 
+	@Reference
 	private RenderingEngineManager renderingEngineManager;
 
 	private GraphicsWriterManager graphicsWriterManager;
 
+	@Reference
 	private CyNetworkViewFactory networkViewFactory;
 
 	private ExportNetworkViewTaskFactory exportNetworkViewTaskFactory;
@@ -169,26 +175,22 @@ public class NetworkViewResource extends AbstractResource {
 	private Collection<VisualProperty<?>> edgeLexicon;
 	private Collection<VisualProperty<?>> networkLexicon;
 
-
-	/*
-	public NetworkViewResource(final ResourceManager manager) {
-		super(manager);
-		NetworkViewResource.styleMapper = new VisualStyleMapper();
-		NetworkViewResource.styleSerializer = new VisualStyleSerializer();
-		NetworkViewResource.renderingEngineManager = manager.getService(RenderingEngineManager.class);
-		NetworkViewResource.networkViewFactory = manager.getService(CyNetworkViewFactory.class);
-
-		// We're the only user of GraphicsWriterManaer, so lets just do this here
-		NetworkViewResource.graphicsWriterManager = new GraphicsWriterManager();
-    manager.registerServiceListener(graphicsWriterManager, "addFactory", "removeFactory", PresentationWriterFactory.class);
-
-	}
-	*/
-
 	public NetworkViewResource() {
 		super();
 	}
 
+	@Reference
+	protected void init(ResourceManager manager) {
+		super.init(manager);
+		styleMapper = new VisualStyleMapper();
+		styleSerializer = new VisualStyleSerializer();
+
+		// We're the only user of GraphicsWriterManaer, so lets just do this here
+		graphicsWriterManager = new GraphicsWriterManager();
+    manager.registerServiceListener(graphicsWriterManager, "addFactory", "removeFactory", PresentationWriterFactory.class);
+	}
+
+	/*
 	public void init(final ResourceManager manager) {
 		super.init(manager);
 		styleMapper = new VisualStyleMapper();
@@ -200,6 +202,7 @@ public class NetworkViewResource extends AbstractResource {
 		graphicsWriterManager = new GraphicsWriterManager();
     manager.registerServiceListener(graphicsWriterManager, "addFactory", "removeFactory", PresentationWriterFactory.class);
 	}
+	*/
 
 	private final void initLexicon() {
 		// Prepare lexicon
@@ -360,7 +363,7 @@ public class NetworkViewResource extends AbstractResource {
 		} 
 		
 		CyNetworkViewWriterFactory cxWriterFactory = 
-					ResourceManager.viewWriterFactoryManager.getFactory(
+					manager.getViewWriterFactoryManager().getFactory(
 							( isCX2 ? CyNetworkViewWriterFactoryManager.CX2_WRITER_ID:
 							CyNetworkViewWriterFactoryManager.CX_WRITER_ID));
 		if(cxWriterFactory == null) {

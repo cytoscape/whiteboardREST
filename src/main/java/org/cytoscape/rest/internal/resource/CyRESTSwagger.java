@@ -18,6 +18,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import org.osgi.service.component.annotations.Reference;
+
 import org.cytoscape.ci.CISwaggerConstants;
 import org.cytoscape.rest.internal.CyRESTConstants;
 import org.cytoscape.rest.internal.task.AutomationAppTracker;
@@ -59,20 +62,12 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
-/*
-import io.swagger.models.properties.ArrayProperty;
-import io.swagger.models.properties.ObjectProperty;
-import io.swagger.models.properties.Property;
-import io.swagger.models.properties.RefProperty;
-import io.swagger.util.Json;
-*/
 
+@ApplicationScoped
 @Component(service = CyRESTSwagger.class, property = { "osgi.jaxrs.resource=true" })
 @Path("/v1/swagger.json")
 public class CyRESTSwagger extends AbstractResource
 {
-	AutomationAppTracker appTracker;
-	
 	private static final String RESOURCE_URN = "swagger";
 
 
@@ -111,10 +106,10 @@ public class CyRESTSwagger extends AbstractResource
 		super();
 	}
 
-	@Override
-	public void init(ResourceManager manager) {
+	@Reference
+	protected void init(ResourceManager manager) {
 		super.init(manager);
-		appTracker = manager.getAutomationAppTracker();
+
 		BundleContext bundleContext = manager.getBundleContext();
 		try {
 			SwaggerResourceTracker swaggerResourceTracker = new SwaggerResourceTracker(bundleContext,bundleContext.createFilter(CyRESTConstants.ANY_SERVICE_FILTER), this);
@@ -125,6 +120,23 @@ public class CyRESTSwagger extends AbstractResource
 
 		updateSwagger();
 	}
+
+	/*
+	@Override
+	public void init(ResourceManager manager) {
+		super.init(manager);
+		System.out.println("CyRESTSwagger: init");
+		BundleContext bundleContext = manager.getBundleContext();
+		try {
+			SwaggerResourceTracker swaggerResourceTracker = new SwaggerResourceTracker(bundleContext,bundleContext.createFilter(CyRESTConstants.ANY_SERVICE_FILTER), this);
+			swaggerResourceTracker.open();
+		} catch (Exception e) {
+			System.err.println("Unable to initialize resource tracker");
+		}
+
+		updateSwagger();
+	}
+	*/
 
 	protected void updateSwagger()
 	{
@@ -141,13 +153,13 @@ public class CyRESTSwagger extends AbstractResource
 
 		System.out.println("buildSwagger == "+classes.size()+" classes");
 
-		String automationAppReport = appTracker.getMarkdownReport(); 
+		String automationAppReport = manager.getAutomationAppTracker().getMarkdownReport(); 
 
 		OpenAPI openAPI = new OpenAPI()
 				.info(new Info()
 						.title("CyREST API")
 						.description(SWAGGER_INFO_DESCRIPTION + automationAppReport))
-				.servers(Collections.singletonList(new Server().url(ResourceManager.HOST + ":" + ResourceManager.cyRESTPort)));
+				.servers(Collections.singletonList(new Server().url(ResourceManager.HOST + ":" + manager.getCyRESTPort())));
 
 				/*
 				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.COLLECTIONS_TAG))
@@ -183,7 +195,7 @@ public class CyRESTSwagger extends AbstractResource
 
 		for (Class<?> clazz: classes) {
 			System.out.println("Reading class: "+clazz.toString());
-			reader.read(clazz, "/v1", null, false, null, null, new LinkedHashSet<String>(), new ArrayList<Parameter>(), new HashSet<Class<?>>());
+			reader.read(clazz, "", null, false, null, null, new LinkedHashSet<String>(), new ArrayList<Parameter>(), new HashSet<Class<?>>());
 		}
 
 		// wrapCIResponses(openAPI);
@@ -263,8 +275,8 @@ public class CyRESTSwagger extends AbstractResource
 	private String getCommandLink() {
 		String url;
 		try {
-			url = "http://localhost:"+ResourceManager.cyRESTPort+"/v1/swaggerUI/swagger-ui/index.html"
-					+ "?url=" + URLEncoder.encode("http://" + ResourceManager.HOST + ":" + ResourceManager.cyRESTPort + "/v1/commands/swagger.json", "UTF-8");
+			url = "http://localhost:"+manager.getCyRESTPort()+"/v1/swaggerUI/swagger-ui/index.html"
+					+ "?url=" + URLEncoder.encode("http://" + ResourceManager.HOST + ":" + manager.getCyRESTPort() + "/v1/commands/swagger.json", "UTF-8");
 		
 			//TODO this should be done with a string formatting utility.
 		return COMMAND_LINK_PREFIX +url + COMMAND_LINK_POSTFIX;

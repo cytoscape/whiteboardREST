@@ -16,6 +16,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import org.osgi.service.component.annotations.Reference;
+
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
@@ -46,6 +49,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+@ApplicationScoped
 @Component(service = GroupResource.class, property = { "osgi.jaxrs.resource=true" })
 @Path("/v1/networks/{networkId}/groups")
 @Tag(name = CyRESTSwagger.CyRESTSwaggerConfig.GROUPS_TAG)
@@ -73,19 +77,28 @@ public class GroupResource extends AbstractResource {
 	
 	private final GroupMapper mapper;
 
+	@Reference
 	private CyGroupFactory groupFactory;
 
+	@Reference
 	private CyGroupManager groupManager;
 
 	public GroupResource() {
 		this.mapper = new GroupMapper();
 	}
 
+	@Reference
+	protected void init(ResourceManager manager) {
+		super.init(manager);
+	}
+
+	/*
 	public void init(ResourceManager manager) {
 		super.init(manager);
 		this.groupFactory = getService(CyGroupFactory.class);
 		this.groupManager = getService(CyGroupManager.class);
 	}
+	*/
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)

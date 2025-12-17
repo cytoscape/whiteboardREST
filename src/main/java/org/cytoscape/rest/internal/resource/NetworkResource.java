@@ -52,6 +52,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import org.osgi.service.component.annotations.Reference;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ci.model.CIResponse;
 import org.cytoscape.io.read.AbstractCyNetworkReader;
@@ -116,6 +119,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+@ApplicationScoped
 @Tag(name = CyRESTSwagger.CyRESTSwaggerConfig.NETWORKS_TAG)
 @Component(service = NetworkResource.class, property = { "osgi.jaxrs.resource=true" })
 @Path("/v1/networks")
@@ -146,32 +150,45 @@ public class NetworkResource extends AbstractResource {
 	// Preset types
 	//	private static final String DEF_COLLECTION_PREFIX = "Created by cyREST: ";
 
+	@Reference
 	protected SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactory;
-	private CyLayoutAlgorithmManager layoutManager;
-	private CyApplicationManager applicationManager;
-	private CyNetworkViewManager networkViewManager;
-	private TaskFactoryManager tfManager;
 
+	@Reference
+	private CyLayoutAlgorithmManager layoutManager;
+
+	@Reference
+	private CyApplicationManager applicationManager;
+
+	@Reference
+	private CyNetworkViewManager networkViewManager;
+
+	@Reference
 	private CyRootNetworkManager cyRootNetworkManager;
+
+	//  For some reason, we don't get this injected
+	//@Reference
 	private EdgeListReaderFactory edgeListReaderFactory;
+
+	@Reference
 	private	NewNetworkSelectedNodesAndEdgesTaskFactory newNetworkSelectedNodesAndEdgesTaskFactory;
+
+	@Reference
 	private LoadNetworkURLTaskFactory loadNetworkURLTaskFactory;
 
-	/*
-	public NetworkResource(ResourceManager manager) {
-		super(manager);
-		NetworkResource.selectFirstNeighborsTaskFactory = manager.getService(SelectFirstNeighborsTaskFactory.class);
-		NetworkResource.layoutManager = manager.getService(CyLayoutAlgorithmManager.class);
-		NetworkResource.applicationManager = manager.getService(CyApplicationManager.class);
-		NetworkResource.networkViewManager = manager.getService(CyNetworkViewManager.class);
-		NetworkResource.tfManager = new TaskFactoryManagerImpl();
-	}
-	*/
+	private TaskFactoryManager tfManager;
 
 	public NetworkResource() {
 		super();
 	}
 
+	@Reference
+	protected void init(ResourceManager manager) {
+		super.init(manager);
+		tfManager = new TaskFactoryManagerImpl();
+		edgeListReaderFactory = manager.getService(EdgeListReaderFactory.class);;
+	}
+
+	/*
 	public void init(final ResourceManager manager) {
 		super.init(manager);
 		selectFirstNeighborsTaskFactory = manager.getService(SelectFirstNeighborsTaskFactory.class);
@@ -184,6 +201,7 @@ public class NetworkResource extends AbstractResource {
 		loadNetworkURLTaskFactory = manager.getService(LoadNetworkURLTaskFactory.class);
 		tfManager = new TaskFactoryManagerImpl();
 	}
+	*/
 
 	@GET
 	@Path("/count")
@@ -350,7 +368,7 @@ public class NetworkResource extends AbstractResource {
 		boolean isCX2 = cxVersion.equals("2");
 	
 		CyNetworkViewWriterFactory cxWriterFactory = 
-				ResourceManager.viewWriterFactoryManager.getFactory(
+				manager.getViewWriterFactoryManager().getFactory(
 						( isCX2 ? CyNetworkViewWriterFactoryManager.CX2_WRITER_ID:
 						CyNetworkViewWriterFactoryManager.CX_WRITER_ID));
 		if (cxWriterFactory == null) {
