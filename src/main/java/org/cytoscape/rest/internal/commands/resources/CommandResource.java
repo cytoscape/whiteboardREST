@@ -128,18 +128,6 @@ public class CommandResource extends AbstractResource
 		ciExceptionFactory = manager.getService(CIExceptionFactory.class);
 	}
 
-	/*
-	public void init(final ResourceManager manager) {
-		super.init(manager);
-		available = manager.getService(AvailableCommands.class);
-		ceTaskFactory = manager.getService(CommandExecutorTaskFactory.class);
-		taskManager = manager.getService(SynchronousTaskManager.class);
-		ciResponseFactory = manager.getService(CIResponseFactory.class);
-		ciErrorFactory = manager.getService(CIErrorFactory.class);
-		ciExceptionFactory = manager.getService(CIExceptionFactory.class);
-	}
-	*/
-	
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)
 	@Operation(summary="List all available command namespaces",

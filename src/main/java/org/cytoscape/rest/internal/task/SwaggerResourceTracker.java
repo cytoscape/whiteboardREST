@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class SwaggerResourceTracker extends ServiceTracker
 {
 	CyRESTSwagger swaggerResource;
+	ServiceReference swaggerReference;
 
 	private final BundleContext context;
 
@@ -22,12 +23,19 @@ public class SwaggerResourceTracker extends ServiceTracker
 		super( context, filter, null );
 		this.context = context;
 		this.swaggerResource = swaggerResource;
+		swaggerReference = context.getServiceReference(CyRESTSwagger.class);
 	}
 
 	@Override
 	public Object addingService( ServiceReference reference ) {
+		if (reference == swaggerReference)
+			return null;
+
 		Object service = context.getService( reference );
+		if (service == null)
+			return null;
 		return delegateAddService( reference, service );
+
 	}
 
 	private Object delegateAddService( ServiceReference reference, Object service ) {

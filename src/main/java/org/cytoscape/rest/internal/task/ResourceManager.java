@@ -38,11 +38,6 @@ public class ResourceManager {
 	public BundleResourceProvider resourceProvider; 
 	public BundleContext bundleContext;
 
-	/*
-	public ResourceManager() {
-	}
-	*/
-
 	public ResourceManager(final CyServiceRegistrar serviceRegistrar,
 			                   final BundleResourceProvider resourceProvider,
 			                   final BundleContext bundleContext,
@@ -60,28 +55,6 @@ public class ResourceManager {
     serviceRegistrar.registerServiceListener(viewWriterFactoryManager, "addFactory", "removeFactory",
         CyNetworkViewWriterFactory.class);
 	}
-
-	/*
-	public void init(final CyServiceRegistrar serviceRegistrar,
-			             final BundleResourceProvider resourceProvider,
-			             final BundleContext bundleContext,
-									 final ServiceTracker cytoscapeJsReaderFactory,
-									 final ServiceTracker cytoscapeJsWriterFactory,
-									 final String cyRESTPort) {
-
-		System.out.println("ResourceManager: init");
-		this.serviceRegistrar = serviceRegistrar;
-		this.resourceProvider = resourceProvider;
-		this.cyRESTPort = cyRESTPort;
-		this.bundleContext = bundleContext;
-		this.cytoscapeJsReaderFactory = cytoscapeJsReaderFactory;
-		this.cytoscapeJsWriterFactory = cytoscapeJsWriterFactory;
-		this.viewWriterFactoryManager = new CyNetworkViewWriterFactoryManager();
-
-    serviceRegistrar.registerServiceListener(viewWriterFactoryManager, "addFactory", "removeFactory",
-        CyNetworkViewWriterFactory.class);
-	}
-	*/
 
 	public CyServiceRegistrar getServiceRegistrar() {
 		return serviceRegistrar;
@@ -120,6 +93,8 @@ public class ResourceManager {
 	}
 
 	public String getCyRESTPort() { return cyRESTPort; }
+
+	public void setCyRESTPort(String port) { cyRESTPort = port; }
 
 	public BundleResourceProvider getBundleResourceProvider() {
 		return resourceProvider;

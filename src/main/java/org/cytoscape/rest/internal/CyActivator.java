@@ -23,6 +23,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.read.InputStreamTaskFactory;
@@ -63,7 +64,7 @@ public class CyActivator extends AbstractCyActivator
 	private CyServiceRegistrar registrar;
 	private static final Logger logger = LoggerFactory.getLogger(CyActivator.class);
 
-	private String port;
+	private String port = "1234";
 	private	AutomationAppTracker automationAppTracker = null;
 	private ServiceTracker cytoscapeJsWriterFactory = null;
 	private ServiceTracker cytoscapeJsReaderFactory = null;
@@ -117,6 +118,16 @@ public class CyActivator extends AbstractCyActivator
 			System.out.println("Unable to set default port: "+e.toString());
 		}
 
+		CyRESTCoreSwaggerAction swaggerCoreAction = new CyRESTCoreSwaggerAction(resourceManager);
+    registerService(bc, swaggerCoreAction, CyAction.class, new Properties());
+
+    CyRESTCommandSwaggerAction swaggerCommandAction = new CyRESTCommandSwaggerAction(resourceManager);
+    registerService(bc, swaggerCommandAction, CyAction.class, new Properties());
+
+    CyAutomationAction automationAction = new CyAutomationAction(registrar);
+    registerService(bc, automationAction, CyAction.class, new Properties());
+
+
 
 		// Extra readers and writers
     final BasicCyFileFilter elFilter = new BasicCyFileFilter(new String[] { "el" },
@@ -127,8 +138,8 @@ public class CyActivator extends AbstractCyActivator
     edgeListReaderFactoryProps.setProperty("ID", "edgeListReaderFactory");
     registerService(bc, edgeListReaderFactory, InputStreamTaskFactory.class, edgeListReaderFactoryProps);
 
-		Thread thread = new Thread(new KickJaxb());
-		thread.start();
+		// Thread thread = new Thread(new KickJaxb());
+		// thread.start();
 	}
 
 	public class KickJaxb implements Runnable {
@@ -173,10 +184,10 @@ public class CyActivator extends AbstractCyActivator
    * @param context
    * @throws Exception
    */
+	// TODO: get the port from the command line, if provided
 	@SuppressWarnings({"rawtypes", "unchecked"})
   private void setPortConfig(BundleContext context) throws Exception
   {
-		port = "1234";
     ServiceReference configurationAdminReference =
         context.getServiceReference(ConfigurationAdmin.class.getName());
 
@@ -194,6 +205,7 @@ public class CyActivator extends AbstractCyActivator
       config.update(dictionary);
 
       context.ungetService(configurationAdminReference);
+			resourceManager.setCyRESTPort(port);
     }
     else
     {

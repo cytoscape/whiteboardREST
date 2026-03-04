@@ -110,6 +110,8 @@ public class CyRESTSwagger extends AbstractResource
 	protected void init(ResourceManager manager) {
 		super.init(manager);
 
+		System.out.println("swagger init called");
+
 		BundleContext bundleContext = manager.getBundleContext();
 		try {
 			SwaggerResourceTracker swaggerResourceTracker = new SwaggerResourceTracker(bundleContext,bundleContext.createFilter(CyRESTConstants.ANY_SERVICE_FILTER), this);
@@ -120,23 +122,6 @@ public class CyRESTSwagger extends AbstractResource
 
 		updateSwagger();
 	}
-
-	/*
-	@Override
-	public void init(ResourceManager manager) {
-		super.init(manager);
-		System.out.println("CyRESTSwagger: init");
-		BundleContext bundleContext = manager.getBundleContext();
-		try {
-			SwaggerResourceTracker swaggerResourceTracker = new SwaggerResourceTracker(bundleContext,bundleContext.createFilter(CyRESTConstants.ANY_SERVICE_FILTER), this);
-			swaggerResourceTracker.open();
-		} catch (Exception e) {
-			System.err.println("Unable to initialize resource tracker");
-		}
-
-		updateSwagger();
-	}
-	*/
 
 	protected void updateSwagger()
 	{
@@ -161,23 +146,6 @@ public class CyRESTSwagger extends AbstractResource
 						.description(SWAGGER_INFO_DESCRIPTION + automationAppReport))
 				.servers(Collections.singletonList(new Server().url(ResourceManager.HOST + ":" + manager.getCyRESTPort())));
 
-				/*
-				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.COLLECTIONS_TAG))
-				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.COMMANDS_TAG))
-				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.CYTOSCAPE_SYSTEM_TAG))
-				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.GROUPS_TAG))
-				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.LAYOUTS_TAG))
-				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.NETWORKS_TAG))
-				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.NETWORK_VIEWS_TAG))
-				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.PROPERTIES_TAG))
-				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.REST_SERVICE_TAG))
-				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.SESSION_TAG))
-				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.TABLES_TAG))
-				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.USER_INTERFACE_TAG))
-				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.VISUAL_PROPERTIES_TAG))
-				.addTagsItem(new Tag().name(CyRESTSwaggerConfig.VISUAL_STYLES_TAG));
-				*/
-		
 		SwaggerConfiguration oasConfiguration = new SwaggerConfiguration()
 				.openAPI(openAPI)
 				.resourcePackages(classNames)
@@ -198,14 +166,9 @@ public class CyRESTSwagger extends AbstractResource
 			reader.read(clazz, "", null, false, null, null, new LinkedHashSet<String>(), new ArrayList<Parameter>(), new HashSet<Class<?>>());
 		}
 
-		// wrapCIResponses(openAPI);
-		// addCommandLinks(openAPI);
-
 		// serialization of the Swagger definition
 		try 
 		{
-			// Json.mapper().enable(SerializationFeature.INDENT_OUTPUT);
-			// this.swaggerDefinition = Json.mapper().writeValueAsString(openAPI);
 			ObjectMapper mapper = Json.mapper();
 			this.swaggerDefinition = mapper.writeValueAsString(reader.getOpenAPI());
 		} catch (JsonProcessingException e) {
@@ -326,10 +289,6 @@ public class CyRESTSwagger extends AbstractResource
 			description += getCommandLink();
 			operation.setDescription(description);
 		}
-
-		//Should be want to scan descriptions, parameter details, etc. and automatically generate links,
-		//this is how it could happen. Note that 
-		//operationEntry.getValue().setDescription("Test afterScan replacement.");
 	}
 
 	@Produces(MediaType.APPLICATION_JSON)

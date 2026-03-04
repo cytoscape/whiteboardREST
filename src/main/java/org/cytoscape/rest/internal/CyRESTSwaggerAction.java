@@ -12,22 +12,22 @@ import org.cytoscape.util.swing.OpenBrowser;
 
 public abstract class CyRESTSwaggerAction extends AbstractCyAction{
 
-	private final CyServiceRegistrar serviceRegistrar;
+	protected final ResourceManager resourceManager;
 
-	private final String cyRESTPort;
-
-	public CyRESTSwaggerAction(String name, CyServiceRegistrar serviceRegistrar, String cyRESTPort) {
+	public CyRESTSwaggerAction(String name, ResourceManager resourceManager) {
 		super(name);
 		this.setPreferredMenu(CyRESTConstants.CY_REST_HELP_MENU_ANCHOR);
-		this.serviceRegistrar = serviceRegistrar;
-		this.cyRESTPort = cyRESTPort;
+		this.resourceManager = resourceManager;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		try {
-			final OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
-			openBrowser.openURL(rootURL() + "?url=" + URLEncoder.encode("http://" + ResourceManager.HOST + ":" + this.cyRESTPort + "/" + swaggerPath(), "UTF-8"));
+			final OpenBrowser openBrowser = resourceManager.getService(OpenBrowser.class);
+			String port = resourceManager.getCyRESTPort();
+			String url = rootURL() + "?url=" + URLEncoder.encode("http://" + ResourceManager.HOST + ":" + port + "/" + swaggerPath(), "UTF-8");
+			System.out.println("URL: "+url);
+			openBrowser.openURL(url);
 		} catch ( IOException e1) {
 			e1.printStackTrace();
 		}
@@ -36,9 +36,5 @@ public abstract class CyRESTSwaggerAction extends AbstractCyAction{
 	protected abstract String rootURL();
 
 	protected abstract String swaggerPath();
-
-	protected final String getCyRESTPort(){
-		return cyRESTPort;
-	}
 
 }

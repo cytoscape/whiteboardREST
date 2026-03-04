@@ -150,18 +150,6 @@ public class TableResource extends AbstractResource {
 		super.init(manager);
 	}
 
-	/*
-	public void init(ResourceManager manager) {
-		super.init(manager);
-		this.tableMapper = new TableMapper();
-		this.tableObjectMapper = new ObjectMapper();
-		this.tableObjectMapper.registerModule(new TableModule());
-		this.tableSerializer = new CyTableSerializer();
-		this.tableManager = manager.getService(CyTableManager.class);
-	}
-	*/
-
-
 	@POST
 	@Path("/{tableType}/columns")
 	@Consumes(MediaType.APPLICATION_JSON)

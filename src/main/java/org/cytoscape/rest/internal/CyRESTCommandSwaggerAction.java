@@ -1,15 +1,15 @@
 package org.cytoscape.rest.internal;
 
-import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.rest.internal.task.ResourceManager;
 
 public class CyRESTCommandSwaggerAction extends CyRESTSwaggerAction{
 
-	public CyRESTCommandSwaggerAction(CyServiceRegistrar serviceRegistrar, String cyRESTPort) {
-		super("CyREST Command API", serviceRegistrar, cyRESTPort);
+	public CyRESTCommandSwaggerAction(ResourceManager resourceManager) {
+		super("CyREST Command API", resourceManager);
 	}
 
 	protected String rootURL()	{
-		return "http://localhost:"+getCyRESTPort()+"/v1/swaggerUI/swagger-ui/index.html";
+		return "http://localhost:"+resourceManager.getCyRESTPort()+"/v1/swaggerUI/swagger-ui/index.html";
 	}
 	
 	protected String swaggerPath() {

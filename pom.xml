@@ -111,6 +111,30 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-swagger-ui</id>
+            <phase>prepare-package</phase>
+            <goals><goal>unpack</goal></goals>
+            <configuration>
+                <artifactItems>
+                    <artifactItem>
+                        <groupId>org.webjars</groupId>
+                        <artifactId>swagger-ui</artifactId>
+                        <outputDirectory>
+                          ${project.build.directory}/resources/swagger-ui
+                        </outputDirectory>
+                    </artifactItem>
+                </artifactItems>
+             </configuration>
+           </execution>
+        </executions>
+			</plugin>
+ 
+
+			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
 				<version>${maven-bundle-plugin.version}</version>
@@ -123,9 +147,10 @@
             <Embed-Dependency>*;scope=!provided|test;groupId=!org.cytoscape</Embed-Dependency>
 						<Import-Package>*;resolution:=optional</Import-Package>
 						<Private-Package>${bundle.namespace}.internal.*</Private-Package>
-            <!--Require-Capability>
-              osgi.extender; filter:="(osgi.extender=pax.cdi)"
-            </Require-Capability-->
+            <Include-Resource>
+              /swagger-ui=${project.build.directory}/resources/swagger-ui/META-INF/resources/webjars/swagger-ui/5.17.14,
+              /swagger-ui/swagger-initializer.js=src/main/resources/swagger-initializer.js
+            </Include-Resource>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -250,6 +275,13 @@
       <groupId>io.swagger.core.v3</groupId>
       <artifactId>swagger-core</artifactId>
       <version>2.2.39</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>swagger-ui</artifactId>
+      <version>5.17.14</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>

@@ -20,7 +20,12 @@ import org.cytoscape.rest.internal.task.ResourceManager;
 import io.swagger.v3.oas.annotations.Parameter;
 
 @ApplicationScoped
-@Component(service = SwaggerUIResource.class, property = { "osgi.jaxrs.resource=true" })
+@Component(service = SwaggerUIResource.class, property = { 
+	"osgi.jaxrs.resource=true",
+	"osgi.http.whiteboard.resource.pattern=/v1/swaggerUI/swaggger-ui/*",
+	"osgi.http.whiteboard.resource.prefix=/v1/swaggerUI",
+	"osgi.http.whiteboard.context.select=(osgi.http.whiteboard.context.name=default)"
+})
 @Path("/v1/swaggerUI")
 public class SwaggerUIResource extends AbstractResource {
 	
@@ -54,8 +59,14 @@ public class SwaggerUIResource extends AbstractResource {
 	}
 	
 	@GET
-	@Path("{path:.*}")
-	public InputStream serveUI(@Parameter(description="path") String path) throws IOException {
-		return manager.getBundleResourceProvider().getResourceInputStream(path);
+	@Path("{fullPath:.*}")
+	public InputStream serveUI(@Parameter(description="The path to the file") @PathParam("fullPath") String path) throws IOException {
+		try {
+			InputStream stream = manager.getBundleResourceProvider().getResourceInputStream(path);
+			return (stream);
+		} catch (Exception e) {
+			System.out.println("Exception getting the stream: "+e.toString());
+		}
+		return null;
 	}
 }
